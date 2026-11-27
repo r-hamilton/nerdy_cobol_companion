@@ -1,0 +1,1148 @@
+<!doctype html><html><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Cobol Build Companion</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@62..125,500..800&family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap">
+<style>
+/* Bench layout: step rail | instruction card | manual slide. The slide gets the most room,
+   glue type is color-coded the way the manual does it (wood glue amber, all-purpose teal),
+   and the cherry accent is the burst finish being built. */
+:root{
+  --bg:#ECEDEF; --panel:#FFFFFF; --sunk:#F5F6F7; --ink:#16181D; --muted:#5B606B; --line:#D6D9DE;
+  --accent:#A3192E; --accent-ink:#FFFFFF; --accent-soft:#F7E4E7;
+  --wood:#9A6A00; --wood-soft:#FBEFCF; --ap:#0B7A76; --ap-soft:#DCF1F0;
+  --ok:#2D7A4C; --ok-soft:#E0F0E6; --warn:#8A5200; --warn-soft:#FFF2D8; --ply:#EBDCC0; --ply-edge:#8C6A3E;
+  --shadow:0 1px 2px rgba(22,24,29,.06),0 4px 16px rgba(22,24,29,.06);
+  --f-display:"Archivo","Arial Narrow",system-ui,sans-serif;
+  --f-body:"IBM Plex Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,"SFMono-Regular",Menlo,monospace;
+}
+@media (prefers-color-scheme:dark){:root:not([data-theme="light"]){
+  --bg:#111215; --panel:#1A1C21; --sunk:#15171B; --ink:#ECEDEF; --muted:#A1A6B0; --line:#2C2F37;
+  --accent:#E8546D; --accent-ink:#1A070B; --accent-soft:#3A1920;
+  --wood:#E9B949; --wood-soft:#382C11; --ap:#45C9C2; --ap-soft:#11312F;
+  --ok:#62C98F; --ok-soft:#15301F; --warn:#EBAA4E; --warn-soft:#33250E; --ply:#6B5A40; --ply-edge:#D9B985;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3); color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111215; --panel:#1A1C21; --sunk:#15171B; --ink:#ECEDEF; --muted:#A1A6B0; --line:#2C2F37;
+  --accent:#E8546D; --accent-ink:#1A070B; --accent-soft:#3A1920;
+  --wood:#E9B949; --wood-soft:#382C11; --ap:#45C9C2; --ap-soft:#11312F;
+  --ok:#62C98F; --ok-soft:#15301F; --warn:#EBAA4E; --warn-soft:#33250E; --ply:#6B5A40; --ply-edge:#D9B985;
+  --shadow:0 1px 2px rgba(0,0,0,.4),0 4px 16px rgba(0,0,0,.3); color-scheme:dark}
+
+[hidden]{display:none!important}
+html,body{height:100%}
+body{margin:0}
+body{background:var(--bg);color:var(--ink);font:15px/1.55 var(--f-body);-webkit-font-smoothing:antialiased}
+*{box-sizing:border-box}
+button,input,textarea{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px;border-radius:4px}
+.mono{font-family:var(--f-mono);font-variant-numeric:tabular-nums}
+
+.shell{height:100%;display:flex;flex-direction:column}
+/* header */
+.top{display:flex;align-items:center;gap:18px;flex-wrap:wrap;padding-block:10px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));border-bottom:1px solid var(--line);background:var(--panel)}
+.brand{display:flex;align-items:baseline;gap:10px;min-width:0}
+.brand h1{margin:0;font-family:var(--f-display);font-stretch:75%;font-weight:800;font-size:22px;letter-spacing:.01em;line-height:1}
+.brand .kit{font-family:var(--f-mono);font-size:12px;color:var(--muted)}
+.prog{display:flex;align-items:center;gap:10px;flex:1 1 220px;min-width:180px;max-width:420px}
+.bar{flex:1;height:8px;border-radius:99px;background:var(--sunk);border:1px solid var(--line);overflow:hidden}
+.bar i{display:block;height:100%;width:0;background:var(--accent);transition:width .3s}
+.prog .mono{font-size:12px;color:var(--muted);white-space:nowrap}
+.timers{display:flex;gap:6px;flex-wrap:wrap;align-items:center}
+.tchip{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line);background:var(--sunk);border-radius:99px;padding:3px 4px 3px 10px;font-size:12.5px}
+.tchip b{font-family:var(--f-mono);font-weight:500;font-variant-numeric:tabular-nums}
+.tchip.doneT{background:var(--ok-soft);border-color:var(--ok);color:var(--ok)}
+.tchip .x{border:0;background:none;width:22px;height:22px;border-radius:99px;color:inherit;opacity:.7}
+.tchip .x:hover{opacity:1;background:var(--line)}
+.tchip .go{border:0;background:none;padding:0;text-decoration:underline;text-underline-offset:2px}
+.tools{display:flex;gap:6px;margin-left:auto;flex-wrap:wrap}
+.finpick{border:1px solid var(--accent)}
+.finpick p{margin:6px 0 10px}
+select.btn{cursor:pointer;color:var(--ink,inherit)}
+.btn{border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:6px 11px;font-size:13.5px;font-weight:500;line-height:1.2}
+.btn:hover{border-color:var(--muted)}
+.btn.pri{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.pri:hover{filter:brightness(1.07)}
+.btn.on{background:var(--ink);color:var(--panel);border-color:var(--ink)}
+.btn:disabled{opacity:.45;cursor:default}
+.sync{font-size:12px;color:var(--muted);display:flex;align-items:center;gap:6px}
+.sync::before{content:"";width:7px;height:7px;border-radius:9px;background:var(--muted)}
+.sync.acct::before{background:var(--ok)}
+
+/* three panes */
+.panes{flex:1;min-height:0;display:grid;grid-template-columns:270px minmax(360px,440px) minmax(0,1fr)}
+.rail,.card,.viewer{min-height:0;overflow:auto}
+.rail{border-right:1px solid var(--line);background:var(--panel);padding:8px 0 24px}
+.ph{padding:14px 14px 6px 16px}
+.ph h2{margin:0;font-family:var(--f-display);font-stretch:80%;font-weight:700;font-size:13px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);display:flex;justify-content:space-between;gap:8px}
+.ph h2 span{font-family:var(--f-mono);letter-spacing:0;font-weight:400;font-size:11.5px}
+.si{display:grid;grid-template-columns:18px 1fr auto;gap:8px;align-items:start;width:100%;text-align:left;border:0;background:none;padding:6px 14px 6px 16px;font-size:13.5px;line-height:1.35;color:var(--ink)}
+.si:hover{background:var(--sunk)}
+.si.cur{background:var(--accent-soft)}
+.si .t{min-width:0}
+.si .s{font-family:var(--f-mono);font-size:11px;color:var(--muted);padding-top:2px}
+.dot{width:14px;height:14px;margin-top:2px;border-radius:99px;border:1.5px solid var(--line);display:grid;place-items:center}
+.dot.d{background:var(--ok);border-color:var(--ok)}
+.dot.d::after{content:"";width:6px;height:3px;border-left:2px solid var(--panel);border-bottom:2px solid var(--panel);transform:rotate(-45deg) translate(1px,-1px)}
+.dot.k{border-color:var(--muted);border-style:dashed}
+.dot.c{border-color:var(--wood);background:var(--wood-soft);animation:pulse 2s infinite}
+.dot.r{border-color:var(--accent)}
+.dot.l{border-color:var(--warn);border-style:dashed;background:var(--warn-soft)}
+.ph.later h2{color:var(--warn)}
+.si.lat{background:var(--warn-soft)}
+.si.lat.cur{outline:2px solid var(--warn);outline-offset:-2px}
+.state.later{background:var(--warn-soft);color:var(--warn)}
+.state.stop{background:var(--accent-soft);color:var(--ink);border:1px solid var(--accent)}
+.state.stop h4{margin:0 0 4px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:700;color:var(--accent)}
+.state.stop ul{margin:0;padding-left:18px;display:grid;gap:6px}
+.state.stop .chip{margin-left:4px;vertical-align:baseline;cursor:pointer}
+.si.skip .t{color:var(--muted);text-decoration:line-through}
+@keyframes pulse{50%{opacity:.45}}
+@media (prefers-reduced-motion:reduce){.dot.c{animation:none}.bar i{transition:none}}
+
+/* instruction card */
+.card{padding:22px 22px 40px;background:var(--bg)}
+.eyebrow{font-family:var(--f-mono);font-size:12px;color:var(--muted);display:flex;gap:8px;flex-wrap:wrap}
+.card h3{font-family:var(--f-display);font-stretch:78%;font-weight:800;font-size:30px;line-height:1.05;margin:6px 0 12px;text-wrap:balance;letter-spacing:.005em}
+.chips{display:flex;gap:6px;flex-wrap:wrap;margin-bottom:14px}
+.chip{font-size:12.5px;font-weight:500;border-radius:6px;padding:3px 8px;border:1px solid var(--line);background:var(--panel);display:inline-flex;align-items:center;gap:6px}
+.chip.wood{background:var(--wood-soft);border-color:transparent;color:var(--wood)}
+.chip.ap{background:var(--ap-soft);border-color:transparent;color:var(--ap)}
+.chip.none{color:var(--muted)}
+.chip.add{background:var(--accent-soft);border-color:transparent;color:var(--accent)}
+.chip.off{background:var(--ok-soft);border-color:transparent;color:var(--ok)}
+.chip.sl{cursor:pointer;font-family:var(--f-mono);font-weight:400}
+.sref{border:0;background:none;padding:0 1px;margin:0;font:inherit;color:var(--accent);text-decoration:underline;text-underline-offset:2px;cursor:pointer;font-variant-numeric:tabular-nums}
+.sref:hover{text-decoration-thickness:2px}
+.body p{margin:0 0 10px;max-width:62ch}
+.box{border-radius:10px;padding:10px 12px;margin:12px 0;font-size:14px}
+.box h4{margin:0 0 4px;font-size:11.5px;letter-spacing:.08em;text-transform:uppercase;font-weight:600}
+.box ul{margin:0;padding-left:18px}
+.box li{margin:2px 0}
+.watch{background:var(--warn-soft);color:var(--ink)}
+.watch h4{color:var(--warn)}
+.errata{background:var(--accent-soft)}
+.errata h4{color:var(--accent)}
+.tipbox{background:var(--panel);border:1px solid var(--line)}
+.tipbox h4{color:var(--muted)}
+.checks{list-style:none;padding:0;margin:12px 0;display:grid;gap:4px}
+.checks label{display:grid;grid-template-columns:20px 1fr;gap:8px;align-items:start;padding:7px 10px;border-radius:8px;background:var(--panel);border:1px solid var(--line);cursor:pointer}
+.checks input{margin-top:3px;accent-color:var(--accent)}
+.checks .ck{text-decoration:line-through;color:var(--muted)}
+.timerbox{display:flex;align-items:center;gap:10px;flex-wrap:wrap;background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:10px 12px;margin:14px 0}
+.timerbox .lab{font-size:13px;color:var(--muted)}
+.timerbox .val{font-family:var(--f-mono);font-size:18px;font-weight:500;min-width:5.5ch;text-align:center}
+.adj{width:30px;height:30px;border-radius:7px;border:1px solid var(--line);background:var(--sunk);font-size:16px;line-height:1}
+.actions{display:flex;gap:8px;flex-wrap:wrap;margin:16px 0}
+.nav{display:flex;justify-content:space-between;gap:8px;margin:6px 0 18px}
+.state{font-size:13.5px;border-radius:8px;padding:8px 10px;margin:10px 0}
+.state.done{background:var(--ok-soft);color:var(--ok)}
+.state.blk{background:var(--sunk);border:1px dashed var(--line);color:var(--muted)}
+.state.cure{background:var(--wood-soft);color:var(--wood)}
+textarea{width:100%;min-height:84px;resize:vertical;border:1px solid var(--line);border-radius:8px;background:var(--panel);padding:8px 10px;font-size:14px}
+.lbl{font-size:12px;font-weight:600;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);margin:18px 0 6px;display:block}
+.ready{margin-top:18px}
+.ready h4{margin:0 0 6px;font-family:var(--f-display);font-stretch:80%;font-size:15px;font-weight:700}
+.ready p{margin:0 0 8px;font-size:13px;color:var(--muted)}
+.rlist{display:grid;gap:4px}
+.rlist button{display:grid;grid-template-columns:1fr auto;gap:8px;text-align:left;border:1px solid var(--line);background:var(--panel);border-radius:8px;padding:7px 10px;font-size:13.5px}
+.rlist button:hover{border-color:var(--accent)}
+.rlist .s{font-family:var(--f-mono);font-size:11px;color:var(--muted)}
+
+/* manual viewer */
+.viewer{border-left:1px solid var(--line);background:var(--sunk);display:flex;flex-direction:column}
+.vhead{display:flex;align-items:center;gap:8px;flex-wrap:wrap;padding:10px 14px;border-bottom:1px solid var(--line);background:var(--panel);position:sticky;top:0;z-index:2}
+.vhead .ttl{font-family:var(--f-mono);font-size:12.5px;color:var(--muted);margin-right:auto}
+.stage{padding:14px;flex:1;display:flex;flex-direction:column;gap:10px}
+.canvaswrap{position:relative;width:100%;background:#fff;border-radius:6px;box-shadow:var(--shadow);overflow:hidden;cursor:zoom-in;aspect-ratio:794/446;max-width:100%}
+.canvaswrap canvas{display:block;width:100%;height:auto}
+.peeknote{font-size:12.5px;color:var(--muted)}
+.drop{border:2px dashed var(--line);border-radius:12px;padding:28px 22px;display:grid;gap:12px;justify-items:start;background:var(--panel)}
+.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop h4{margin:0;font-family:var(--f-display);font-stretch:80%;font-size:20px;font-weight:800}
+.drop p{margin:0;max-width:56ch;font-size:14px;color:var(--muted)}
+.drop code{font-family:var(--f-mono);font-size:12px;background:var(--sunk);padding:2px 6px;border-radius:4px;word-break:break-all}
+.noslide{border-radius:12px;padding:22px;background:var(--panel);border:1px solid var(--line)}
+.noslide h4{margin:0 0 6px;font-family:var(--f-display);font-stretch:80%;font-size:18px;font-weight:800}
+.noslide p{margin:0;color:var(--muted);font-size:14px;max-width:56ch}
+.diag{padding:14px 14px 0}
+.dcard{background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:12px 14px 10px}
+.dcard h4{margin:0 0 2px;font-family:var(--f-display);font-stretch:80%;font-size:17px;font-weight:800}
+.dcard .cap{margin:0 0 8px;font-size:12.5px;color:var(--muted)}
+.dwrap{overflow-x:auto}
+.dwrap svg{display:block;width:100%;min-width:520px;height:auto}
+.dg-ply{fill:var(--ply);stroke:var(--ply-edge);stroke-width:1.5}
+.dg-hole{fill:var(--panel);stroke:var(--ply-edge);stroke-width:1.5}
+.dg-edge{fill:none;stroke:var(--accent);stroke-opacity:.35;stroke-width:14}
+.dg-slit{stroke:var(--ply-edge);stroke-width:1.6}
+.dg-tape{fill:url(#dg-hatch);stroke:var(--warn);stroke-width:1.5;stroke-dasharray:5 3}
+.dg-hl{stroke:var(--warn);stroke-width:1.6}
+.dg-t{fill:var(--ink);font:700 21px var(--f-body)}
+.dg-s{fill:var(--muted);font:500 15px var(--f-mono)}
+.dg-n{fill:var(--ink);font:400 17px var(--f-body)}
+.dg-w{fill:var(--warn);font:700 17px var(--f-body)}
+.dg-lead{stroke:var(--warn);stroke-width:1.2;fill:none}
+.burst{height:12px;border-radius:99px;margin-top:14px;background:radial-gradient(ellipse at center,#C2273F 0%,#9E1A30 45%,#3a0c14 78%,#0d0d0f 100%)}
+
+/* zoom + drawer */
+.overlay{position:fixed;inset:0;background:rgba(10,10,12,.82);z-index:50;display:flex;flex-direction:column;padding:max(12px,env(safe-area-inset-top,0px)) max(12px,env(safe-area-inset-right,0px)) max(12px,env(safe-area-inset-bottom,0px)) max(12px,env(safe-area-inset-left,0px))}
+.overlay .bar2{display:flex;gap:8px;justify-content:flex-end;padding-bottom:8px}
+.overlay .zscroll{flex:1;overflow:auto;border-radius:8px;cursor:grab}
+.overlay canvas{display:block;margin:auto;background:#fff}
+.drawer{position:fixed;top:0;right:0;bottom:0;width:min(460px,100%);background:var(--panel);border-left:1px solid var(--line);z-index:40;box-shadow:var(--shadow);overflow:auto;padding:20px max(20px,env(safe-area-inset-right,0px)) 30px 20px}
+.drawer h3{font-family:var(--f-display);font-stretch:78%;font-size:24px;font-weight:800;margin:0 0 4px}
+.drawer .sub{color:var(--muted);font-size:13.5px;margin:0 0 14px}
+.drawer ol{padding-left:20px;margin:0;display:grid;gap:10px}
+.drawer li{font-size:14px}
+.drawer .mono{font-size:12px;color:var(--muted)}
+.toast{position:fixed;left:50%;bottom:max(18px,env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--panel);padding:10px 16px;border-radius:10px;font-size:14px;z-index:60;box-shadow:var(--shadow)}
+.kbd{font-family:var(--f-mono);font-size:11px;border:1px solid var(--line);border-radius:4px;padding:0 4px;background:var(--sunk)}
+.hint{font-size:12px;color:var(--muted);margin-top:16px}
+
+.main{display:contents}
+@media (max-width:1180px){
+  .panes{grid-template-columns:230px minmax(0,1fr)}
+  .main{display:block;overflow:auto;min-height:0;min-width:0}
+  .card,.viewer{overflow:visible;min-height:auto}
+  .viewer{border-left:0;border-top:1px solid var(--line)}
+  .vhead{position:static}
+}
+@media (max-width:760px){
+  .shell{height:auto}
+  .panes{display:flex;flex-direction:column;overflow:visible}
+  .main{overflow:visible}
+  .rail{max-height:42vh;border-right:0;border-bottom:1px solid var(--line)}
+  .card{padding:18px max(16px,env(safe-area-inset-right,0px)) 24px max(16px,env(safe-area-inset-left,0px))}
+  .card h3{font-size:26px}
+  .tools{margin-left:0}
+}
+</style>
+
+<div class="shell">
+  <header class="top">
+    <div class="brand"><h1>Cobol Build Companion</h1><span class="kit">NG Cobol kit v2.0.0</span></div>
+    <div class="prog"><div class="bar" aria-hidden="true"><i id="barFill"></i></div><span class="mono" id="progTxt">0 / 0</span></div>
+    <div class="timers" id="timers" aria-live="polite"></div>
+    <div class="tools">
+      <span class="sync" id="sync">Saving in this browser</span>
+      <select class="btn" id="finSel" aria-label="Finish plan"><option value="" disabled>Finish plan...</option><option value="simple">Finish: your own</option><option value="custom">Finish: cherry burst</option></select>
+      <button class="btn" id="btnNotes" type="button">Manual corrections</button>
+      <button class="btn" id="btnWake" type="button" title="Stop the laptop screen from sleeping while this page is open">Keep screen on</button>
+      <button class="btn" id="btnLoad" type="button">Load manual</button>
+      <input type="file" id="fileIn" accept="application/pdf,.pdf" hidden>
+    </div>
+  </header>
+  <div class="panes">
+    <nav class="rail" id="rail" aria-label="Build steps"></nav>
+    <div class="main" id="mainCol"><main class="card" id="card"></main>
+    <section class="viewer" id="viewer" aria-label="Manual slide">
+      <div class="vhead">
+        <span class="ttl" id="vTitle">Manual slide</span>
+        <button class="btn" id="vPrev" type="button" aria-label="Previous slide">&#8249;</button>
+        <button class="btn" id="vNext" type="button" aria-label="Next slide">&#8250;</button>
+        <button class="btn" id="vBack" type="button" hidden>Back to step slide</button>
+        <button class="btn" id="vZoom" type="button">Zoom</button>
+      </div>
+      <div class="diag" id="diag" hidden></div>
+      <div class="stage" id="stage"></div>
+    </section></div>
+  </div>
+</div>
+
+<div class="overlay" id="zoom" hidden>
+  <div class="bar2"><button class="btn" id="zOut" type="button">Smaller</button><button class="btn" id="zIn" type="button">Larger</button><button class="btn pri" id="zClose" type="button">Close</button></div>
+  <div class="zscroll" id="zScroll"><canvas id="zCanvas"></canvas></div>
+</div>
+<aside class="drawer" id="drawer" hidden aria-label="Manual corrections"></aside>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"></script>
+<script>
+"use strict";
+/* ---------------- build data ---------------- */
+const MANUAL_URL = "https://www.nerdygurdy.nl/wp-content/uploads/2026/10/NG-Cobol-manual-v2.0.0.pdf";
+const PHASES = [
+  {k:"prep", n:"Prep and test"},
+  {k:"body", n:"Body build"},
+  {k:"fin",  n:"Finish the body"},
+  {k:"hw",   n:"Hardware"},
+  {k:"kb",   n:"Keybox, wheel and crank"},
+  {k:"str",  n:"Strings"},
+  {k:"capo", n:"Capos (optional)"}
+];
+const BURST_CHECKS = [
+  "Sand the show face to 220 with a block. Light pressure, with the grain, and stay off the edges.",
+  "Raise the grain: wipe with a damp cloth, let it dry fully, then knock it back with a few light passes of 220 or 320. (Less critical with alcohol dye, but it leaves a smoother surface.)",
+  "Red alcohol dye in quick, light coats: wipe a whole face fast in long overlapping strokes without going back over drying areas. Let each coat dry about 15 minutes. Build 2 to 4 coats until it matches your test piece.",
+  "Seal: stamp the first shellac coat on with a lightly loaded rag pad, dabbing straight down without dragging, so it doesn't smear the alcohol dye. Once dry (about an hour), two more thin coats. Show face only: keep it off edges that get glued, out of holes and slots, and off faces marked IN."
+];
+const STEPS = [
+/* ---- prep ---- */
+{id:"p-mat",ph:"prep",slide:8,add:true,t:"Gather glue, clamps and finish supplies",
+ d:"The kit includes no glue, tools or finish. Get the glue and tools on this list before you start, because the first glue-up comes quickly.\n\n%B%With the cherry burst guide, the first finish session comes early in the body build too, so get the finish supplies now.\n\n%O%Your finish can wait. The manual paints once the body is closed (slide 35), so you have time to decide.\n\nFirst time here? Pick a finish plan below. You can change it any time from the button at the top.",
+ checks:["Wood glue, plus all-purpose glue or super glue for the plastic parts","10 or more clamps, plus soft pads or scrap cauls to protect finished faces","Screwdrivers, hex keys, a size 10 wrench, a retracting knife, a 1 mm drill bit","Sandpaper: 220, 320, 400, and 1000 to 2000 wet/dry. A flat sanding block","Lint-free cloths, nitrile gloves, blue painter's tape","%B%Keda red dye powder, denatured alcohol for mixing, small glass jars with lids and coffee filters","%B%Shellac. Dewaxed is safest under lacquer (Zinsser SealCoat says so on the can). If yours isn't labeled dewaxed, the spray test on your test piece will show whether the lacquer grips","%B%StewMac ColorTone aerosols: Sunburst Black for the burst fade, Black Gloss for the solid black parts, and Classic Clear Gloss","%O%Your finish, when you get to it: the manual suggests a clear coat on the body and keybox and black for the other parts (slide 35)","If you'll spray any finish: a respirator rated for it, and a well-ventilated spot","Loctite or super glue for the crank bolt, violin rosin, cotton"],
+ deps:[]},
+{id:"p-free",ph:"prep",slide:3,add:true,t:"Freeing parts, and cutting a test piece",
+ d:"Don't free every part now. Remove parts as each step calls for them. They're unlabeled, so they're easier to identify, and harder to lose or ding, while still in their plate. When a step needs a part, cut it off at its tabs with a sharp knife or chisel instead of pushing it out. Pushing splinters the face veneer, and the face veneer is your finish surface.\n\n%B%For the burst test in the next step, cut a palm-sized piece from a blank border area of the plate that holds the top plate or the sides, away from any parts, so it's the same plywood as your burst panels. Keep the empty plate frames as parts come out; they make extra test material.\n\nThe manual never names the plywood parts. Match each part to its slide by shape, using the slide viewer.",
+ tips:["Dry-fit as much as you can before gluing. The manual says most of the instrument goes together without glue, and some tabs may need light sanding if the wood is thick."],
+ deps:["p-mat"]},
+{id:"p-mix",ph:"prep",slide:null,add:true,off:true,t:"Mix the dyes in denatured alcohol",
+ d:"Mix the Keda powders in denatured alcohol, not water. Alcohol dye barely raises the grain and dries fast, so you build even color in light coats. It also means the shellac step needs a light touch, which that step covers.\n\nStart weaker than the kit's full-strength ratio, around half strength. It's easy to darken with another coat, but you can't take color back out.",
+ checks:["Use clean glass jars with tight lids, one per color","Measure the powder and alcohol, and write the ratio on a piece of tape on the lid","Stir or shake until dissolved, let it sit 10 minutes, then shake again","Strain through a coffee filter into a second jar to catch undissolved specks","Mix one master batch of red big enough for every red surface, so session A and session B match","Keep the lids on between uses. Alcohol evaporates fast, and the dye gets stronger as it does"],
+ watch:["Denatured alcohol is flammable and the fumes are strong. Mix with ventilation, away from flames and pilot lights, and wear nitrile gloves.","Let used rags dry flat outdoors before throwing them away."],deps:["p-free"]},
+{id:"p-test",ph:"prep",slide:null,ref:35,add:true,off:true,t:"Test the dye and shellac on an offcut",
+ d:"Run the dye and shellac steps on your test piece before touching a real panel. If your dye or shellac hasn't arrived yet, use Skip for now and keep building. This test only has to be done before the first dye step in finish session A.\n\nWhen it is dry, judge two things. Is the red the shade you want? Adjust the dilution now. And did the first shellac coat smear the red? If so, make that pass lighter and faster.",
+ checks:BURST_CHECKS.concat(["Write down your dye ratios, and keep the test piece for the spray test later"]),
+ tips:["Tried and dropped on the first build: a black stain under the red to make the grain pop. On this plywood it looked muddy, so the guide goes straight to red."],
+ deps:["p-free"]},
+/* ---- body ---- */
+{id:"s9",ph:"body",slide:9,t:"Laminate the tail wall",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the two plates with the large round hole face to face. This becomes the tail end of the body, where the crank shaft comes out.\n\nUse the engraved guide lines to line the edges up exactly. Wipe away squeeze-out with a wet cloth.",
+ watch:["Glue the full surface. Unglued spots between touching parts can buzz when you play (manual, slide 3)."],deps:["p-free"]},
+{id:"s10",ph:"body",slide:10,t:"Laminate the bottom",glue:"wood",timer:{l:"Clamp",m:60},
+ d:"Glue the slotted body-shaped plate onto the plain one. The slotted plate goes on top, with its \"inside\" engraving visible and facing up into the body.\n\nKeep it inside the engraved guide line, which leaves a 6 mm border around the edge. Clamp or weight it evenly over the whole area.",
+ watch:["The plain face of the lower plate is the outside of the back. Keep glue and squeeze-out off it."],deps:["p-free"]},
+{id:"s11",ph:"body",slide:11,off:true,t:"Laminate the keybox lid",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the two long rectangular plates face to face. The engraved logo must stay visible; it ends up on the inside of the lid (slide 60 shows it facing in). This is the keybox lid, which goes on near the end of the build.",deps:["p-free"]},
+{id:"s12",ph:"body",slide:12,off:true,t:"Assemble the keybox",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the two slotted sides, the bottom and the end pieces into a long open box. The \"inside\" engravings face in.\n\nCheck that the key slots on both sides line up with each other (red boxes on the slide).",
+ watch:["Keep glue out of the key slots. The keys have to slide freely."],deps:["p-free"]},
+{id:"s13",ph:"body",slide:13,off:true,t:"Join the bass bar through the black U",glue:"ap",timer:{l:"Set",m:20},
+ d:"Fit the two wooden bass bar pieces into the black plastic U as shown, and note its orientation. This is plastic to wood, so use all-purpose glue or super glue.",deps:["p-free"]},
+{id:"s14",ph:"body",slide:14,off:true,t:"Glue up the head-box sides",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Join the smaller panels to the two head-box sides with the slanted slots, as shown.",
+ watch:["The slots on both sides must line up (see the inset)."],deps:["p-free"]},
+{id:"s15",ph:"body",slide:15,t:"Build the head box onto the bottom",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Join the two side assemblies with the cross pieces and the square frame, standing on the narrow end of the laminated bottom from slide 10. The whole head box is glued to the bottom here; the right-hand photo shows it in place. The \"inside\" engraving faces into the box.\n\nDry-fit first so every tab drops into its slot in the bottom, then glue and clamp.",
+ watch:["The bottom's plain lower face is the outside of the back. Work on a clean cloth and keep squeeze-out off it."],deps:["s14","s10"]},
+{id:"s16",ph:"body",slide:16,off:true,t:"Laminate the tuner plate",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the two plates with eight holes face to face. A pencil or dowel through two of the holes keeps them aligned while you clamp.",deps:["p-free"]},
+{id:"s17",ph:"body",slide:17,t:"Close the head box with the tuner plate",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the eight-hole plate onto the head box.",
+ watch:["Align it flush at the front and top (red line on the slide)."],deps:["s15","s16"]},
+{id:"fa1",ph:"body",slide:null,ref:10,add:true,t:"Finish session A: mark the show faces",
+ d:"Panels for this session: the bottom (slide 10, with the head box already glued on from slide 15), the tail wall (slide 9), the top plate (slide 33) and the slotted bending panel (slide 28). That last one gets dyed flat now, before it's bent in. The keybox lid (slide 11) joins them for its logo face only, which is the inside of the lid and gets red.\n\nTwo assemblies you've already built get finished in place in this session too: the keybox walls (cherry red) and the head box (red now, with a mini burst fade added in the spray phase).\n\nMark the face that does NOT show with a pencil \"IN\" so you never finish the wrong side.",
+ checks:["Bottom: the show face is the plain face of the lower plate. With the head box on it, turn it upside down and prop it on blocks or a padded box so that face sits level. The slotted side with \"inside\" faces into the body.","Tail wall: dry-fit it onto the bottom where slide 20 shows it, confirm which face points out, and mark the inner face IN.","Top plate: the show face is the one without an \"inside\" engraving. If there is none, dry-place it on the body as on slide 33 and mark the underside IN.","Slotted bending panel: hold it in a gentle curve against its spot as on slide 28 to see which face ends up outside. Mark the inner face IN. Don't force a full bend yet.","Top plate: dry-place the keybox on the narrow neck as on slide 54 and mark only where it actually touches the top plate. Trace onto tape rather than the wood: lay tape over the area, trace the contact edge onto the tape, then trim the tape a hair inside the line. Pencil left on the wood gets sealed in by the shellac and shows. The keybox is glued there with wood glue, which won't hold on shellac. Any area the keybox covers without touching gets finished normally, because it shows through the gap.","Keybox (in place): the show faces are the outer faces of its walls. Keep dye out of the key slots. Leave the bottom face undyed; it gets sprayed black later, except its contact area, which stays bare for glue.","Keybox lid: the logo face is the show face for now (it's the inside of the lid, slide 60). Its plain top face and edges stay undyed; they get sprayed black later.","Head box (in place): the show faces are its outer sides and front. Tape off the whole top, where the black cover plate glues on later (slide 36)."],
+ deps:["s9","s10"]},
+{id:"fa2",ph:"body",slide:null,ref:3,add:true,t:"Sand and raise the grain",timer:{l:"Dry",m:60},
+ d:"Lay the panels out as in the layout diagram, show faces up, raised on a few blocks so the edges don't stick to the table.\n\nSand the show faces to 220 with a flat block, light pressure, with the grain. The face veneer on plywood is thin, and thinnest where you press near an edge, so stay off the edges.\n\nWipe the faces with a damp (not wet) cloth to raise the grain. Let them dry fully, then knock the raised fibers down with a few light passes of 220 or 320. With alcohol dye this matters less than with water dye, but it still leaves a smoother surface for the red.",
+ watch:["Thin panels can cup when damp. Let the top plate dry flat under a light weight with paper between."],deps:["fa1"]},
+{id:"fa5",ph:"body",slide:null,add:true,t:"Red dye",timer:{l:"Dry per coat",m:15},
+ d:"Alcohol dye dries in a minute or two, so work fast and in light coats. Load a cloth generously and wipe a whole face quickly in long, overlapping strokes. Don't go back over areas that have started to dry; that's what leaves lap marks.\n\nStreaks and blotches even out as you add coats. Build the color in 2 to 4 coats until it matches your test piece.",
+ tips:["Keybox lid: dye its underside (the face with the engraved logo) red with everything else, and shellac it with the rest. Its plain top face and edges stay undyed; they go black later.","If a coat streaks, one more light coat over the whole face evens it out better than spot-fixing.","Use the same master batch of red for every surface so the color matches.","Keep a fan from blowing directly on the work while dyeing. It dries the dye too fast to blend. Keep the room ventilated."],
+ watch:["Check the keybox footprint on the top plate is taped off (see the layout diagram) before the first coat, and keep it taped through the red and the shellac. Pull the tape once the last shellac coat is dry."],deps:["fa2"]},
+{id:"fa5m",ph:"body",slide:null,add:true,t:"Protect the glue areas and holes before shellac",
+ d:"Dye doesn't stop glue from holding, so the red on any glue area is fine. Shellac does: wood glue and the all-purpose glue won't bond well to it, and shellac building up in holes and slots makes parts fit too tight. Before sealing, cover or guard every spot below.\n\nShellac goes on the show face only. Keep it from wrapping around edges onto the IN faces.",
+ checks:["Top plate: the keybox contact area is still taped","Top plate: cover just the small mounting slots for the dog base and drone base (slide 42), tail clamp (slide 43) and mute (slide 47) with small pieces of tape, so shellac doesn't build up inside them. Their footprints can take shellac. You'll scrape it off inside each footprint right before gluing those parts","Erase any pencil lines outside the tape with a white plastic eraser, light pressure, testing a corner first. Shellac seals pencil in for good","Head box: the whole top is still taped. It's already glued to the bottom (slide 15). Keep shellac on its outer sides and front only: off the square-framed wall, off the inside, and off any edge the body sides or the top plate glue to later","Tail wall: keep shellac on the face only, off its tabs and edges, which glue into the body. Cover the crank shaft hole so shellac doesn't build up where the outer bearing sits (slide 64)","Small screw holes (strap pins, tail clamp screw, bearing screw, melody mute bolts): cover each with a small dot of tape","Top plate: cover any other small hole or slot with a dot of tape too, even if you can't tell what it's for. That includes the tiny hole between the wheel slot and the sound hole, and the two small bridge slots on the tail side of the wheel slot (cover each slot on its own, no strip between them; the bridge isn't glued and moves, so finish under it is fine). The sound hole and wheel slot edges themselves don't need tape; just wipe any shellac that runs down inside","Slotted bending panel: shellac on the outer face only. Keep it off the ends and edges, which glue to the frame","Keybox walls: don't tape the 58 key slots one by one. Run one strip of tape along the inside face of each wall, covering the whole row of slots from behind (the inside isn't finished anyway). Then use an almost dry pad on the outside so nothing runs into the slots. Right after each wall, look into the slots and clear any shellac with a folded piece of paper before it dries. Put a dot of tape on each of the 6 small bolt holes at the wheel end (the string-guard hooks bolt through them from outside, slide 62). Once dry, test-slide a key through every slot and scrape any that bind","Keybox bottom: the contact area is still taped","Keybox lid: shellac the red logo face. Shellac that wraps onto the plain top face is fine; it gets scuffed and sprayed black"],
+ watch:["If shellac wraps onto an IN face or a glue edge, wipe it off right away with a cloth dampened with denatured alcohol. Those areas aren't dyed, so wiping them is safe. Don't wipe near the red."],deps:["fa5"]},
+{id:"fa6",ph:"body",slide:null,add:true,t:"Seal with shellac (three coats)",timer:{l:"Dry per coat",m:60},
+ d:"Shellac is also dissolved in alcohol, so it can re-wet the alcohol dye and drag it. The first coat is the critical one. Stamp it on: dab a lightly loaded rag pad straight down onto the surface without dragging it, working across the face. It leaves a very thin seal. Let it dry fully, about an hour. That coat locks the dye in.\n\nThen two thin brushed or padded coats, about an hour apart, for three coats in total. Don't add more than three on the top plate. It's the soundboard, and a thicker finish there dulls the tone.\n\nThe shellac keeps the black toner from muddying the red later.\n\nFrom here on, store finished panels flat with the show face up and covered. Pad your clamp jaws. Glue squeeze-out wipes cleanly off shellac with a damp cloth, so wipe it right away.",
+ watch:["Practice the first-coat pass on your test piece before the real panels. If the red smears, the pass was too slow or too wet.","Faces marked IN stay bare. They are glue surfaces."],deps:["fa5"]},
+{id:"s18",ph:"body",slide:18,t:"Glue the inner frames onto the bottom",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Stand the two frames with the large cutouts in their slots on the bottom.",
+ watch:["Work on a soft cloth so the finished back doesn't get scratched."],deps:["s10","fa6"]},
+{id:"s19",ph:"body",slide:19,t:"Fit the bass bar across the frames",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Set the bass bar assembly from slide 13 across the frames, in its slots.",
+ watch:["Check the inset on the slide: the black U must not touch the part beneath it."],deps:["s18","s13"]},
+{id:"s20",ph:"body",slide:20,t:"Glue on the tail wall",glue:"wood",timer:{l:"Clamp",m:60},
+ d:"Glue the tail wall (slide 9) to the wide end of the bottom, outer face pointing out.",
+ watch:["The tail wall must be vertical and centered (insets on the slide)."],deps:["s19","fa6"]},
+{id:"s21",ph:"body",slide:21,off:true,glue:"none",bag:"Bag 2",t:"Press the bearing into its holder",
+ d:"Press the large bearing into the black bearing holder. No glue.",deps:[]},
+{id:"s22",ph:"body",slide:22,glue:"none",bag:"Bag 3",t:"Screw the bearing holder to the frame",
+ d:"Screw the holder onto the inner frame with two 2.5 x 16 mm screws, the smallest screws in the kit.",deps:["s21","s18"]},
+{id:"s23",ph:"body",slide:23,glue:"none",t:"Test-fit the shaft",
+ d:"Slide the shaft through the tail wall into the inner bearing. It should slide in and out easily.\n\nIf it binds, improve the bearing alignment, or lightly sand the end of the shaft that goes into the inner bearing with fine sandpaper. Then take the shaft back out.",
+ watch:["Sort out alignment now. Once the top plate is on, the inner bearing is hard to reach."],deps:["s22","s20"]},
+{id:"s24",ph:"body",slide:24,t:"Glue in the head-box partition",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the panel into position as shown by the red arrow.",deps:["s20"]},
+{id:"s25",ph:"body",slide:25,t:"Glue in the tabbed floor panel",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the tabbed panel into position as shown by the red arrow.",deps:["s24"]},
+{id:"s26",ph:"body",slide:26,t:"Add the notched corner strips",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the two notched strips into the corners the red lines point to.",deps:["s25"]},
+{id:"s27",ph:"body",slide:27,t:"Add the second pair of corner strips",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the next two strips into the corners the red lines point to.",deps:["s26"]},
+{id:"s28",ph:"body",slide:28,t:"Fit the kerfed bending panel",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"The panel with many parallel cuts bends into the curved section shown, outer face out. Bend it slowly so it flexes along the cuts.",
+ watch:["%B%The panel is already dyed and shellacked. The shellac may craze a little at the slit edges as it bends. That's normal; the clear coats cover it.","Pad the clamps on the outer face."],
+ tips:["Once bent, the slits read as fine, even lines. They don't need filling."],deps:["s27"]},
+{id:"fb",ph:"body",slide:null,ref:29,add:true,t:"Finish session B: the sides",timer:{l:"Shellac dry",m:60},
+ d:"The sides are mirror images on the body, so mark them before finishing. Dry-fit both sides with clamps (slide 29 asks you to practice this anyway) and pencil \"IN\" plus L or R on each inner face. Then take them off and run the same sequence as session A on the outside faces.",
+ checks:["Dry-fit both sides, mark IN and L/R on the inner faces"].concat(BURST_CHECKS),
+ watch:["Let them dry flat under a light weight so they don't cup."],deps:["s28","s23","p-test"]},
+{id:"s29",ph:"body",slide:29,t:"Glue on the sides",glue:"wood",timer:{l:"Clamp",m:60},
+ d:"The side pieces are not rectangular. Check the head side, tail side and bottom edge against the diagram on the slide before you glue.\n\nPractice the clamping without glue first, and leave room at the top edge for the side strips in the next step.",
+ watch:["Pad every clamp jaw.","%B%These faces are already finished. Wipe squeeze-out off the shellac right away.","%O%Wipe squeeze-out right away. Dried glue on the outside blocks any stain or finish later."],deps:["fb"]},
+{id:"s30",ph:"body",slide:30,t:"Glue the side strips",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the narrow strips along the inside of the top edge of each side. They give the top plate a gluing surface. They are not rectangular either, so check the orientation diagram.",deps:["s29"]},
+{id:"s31",ph:"body",slide:31,glue:"none",t:"Shape the top edges",
+ d:"With a file, or sandpaper on a flat piece of wood, bring the top edges of the sides, strips and ribs down so they follow the curve of the top plate and sit flat across it.",
+ watch:["Put a strip of painter's tape along the side faces near the top edge so the file can't scratch them."],deps:["s30"]},
+{id:"s33",ph:"body",slide:33,also:[32],t:"Glue on the top plate",glue:"wood",timer:{l:"Clamp",m:60},
+ d:"The v2 top plate is flexible plywood and bends without pre-bending (slide 32).\n\n%B%Changed from the manual: do not wet the top plate. Its show face is already sealed, and water can spoil the finish. If it really fights the bend, dampen only the underside.\n\n%O%If you wet the top plate to help it bend, as the manual does, let it dry fully before any finish goes on.\n\nUse the notch at the tail end for centering. Do a test clamping first. Clamps through the holes press the bass bar and ribs against the top.",
+ watch:["Cauls or pads under every clamp.","Wipe squeeze-out immediately.","Let it cure overnight before the finish phase."],deps:["s31","fa6"]},
+{id:"s34",ph:"body",slide:34,t:"Glue on the five-hole strip",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the small strip with five holes into place at the head box, as shown.",deps:["s33"]},
+/* ---- finish ---- */
+{id:"p-spray",ph:"fin",slide:null,add:true,t:"Spray test on your offcut",
+ d:"Before spraying the instrument, spray the dyed test piece from step 4. This is where you practice the fade and confirm the spray cans work together over your dye and shellac.\n\nCheck three things when it's dry. The clear must not wrinkle, lift or craze the black. The fade should blend with no hard line. And the amber in the Classic Clear warms the red a little, so judge the final color here.",
+ checks:["A few light passes of Sunburst Black along one edge, working inward, can moving the whole time","Let it flash off, then two thin coats of Classic Clear over the whole piece","Check for wrinkling, lifting or a hard fade line","Compare the red under the clear with what you wanted"],
+ watch:["Ventilation and a respirator, even for a test piece."],deps:["p-test"]},
+{id:"fe",ph:"fin",slide:null,ref:35,add:true,t:"Flush and ease the edges",
+ d:"The manual paints right after the body is closed (slide 35) and never covers edges, apart from shaping the top edges of the sides on slide 31. This is the moment for them: after all the woodwork, before any finish. Lacquer and paint pull thin on a sharp corner and chips there first, so a slightly rounded edge holds the finish better and feels nicer in your hands.\n\n%B%Your faces are already dyed and shellacked, so protect them and work only on the edges.",
+ checks:["%B%Run painter's tape along the faces next to each edge you'll work on, so a slipping block can't scuff the red","Flush first: wherever the top plate or the bottom sticks out past the sides, sand it flush with 220 on a block. Stroke toward the body, not away from it, so the plies don't tear out","Then ease every sharp outside corner on the body, head box and tail wall: 2 or 3 light strokes of 220 at about 45 degrees, for a round-over of roughly 1 mm. Plywood face veneer is thin, so stop there","Keybox: ease its top edges and outside corners the same way, but leave its bottom contact area sharp and bare for glue","Keybox lid: ease its outer edges and corners","Leave the edges of the sound hole and wheel slot alone apart from knocking off splinters","Laser char on the edges can stay, or sand it back if you want lighter edges. Wipe off any loose soot with a dry cloth","Wipe off the dust","%B%Touch-up: anywhere you went through to pale wood on a red area that won't get black toner (the keybox walls and the center of the head box faces), dab on red dye with a cotton swab or fine brush. Let it dry, then dab a little shellac over it"],
+ watch:["%B%Don't use alcohol or a damp alcohol rag to clean up near the red. It lifts the dye."],deps:["s34","s11","s12"]},
+{id:"fz",ph:"fin",slide:35,opt:true,t:"Finish the instrument your way",timer:{l:"Cure",m:2880},
+ d:"The manual paints here, with the body closed and before any hardware (slide 35). It suggests a clear coat on the keybox and body and black for the other parts, but any finish works: spray lacquer, wipe-on poly or oil, or none at all. If you leave it bare, mark this step \"Not doing this\".\n\nThese notes come from a finished build and apply whatever you use. Set the cure timer to what your finish's label says.",
+ checks:["Parts to finish now: the body, the keybox (it isn't glued on until slide 54, so do it on the bench), the keybox lid, the head cover plate (slide 36) and the tail plate (slide 48). Only paint the top side of the plates (slide 35)","Keybox lid: the engraved logo goes on the inside of the lid (slide 60). Hinges screw into the plain top face; put tape over each spot before drilling so the finish doesn't chip","Sand to 220 with a block, light pressure. The face veneer is thin, so stay off the edges","Keep finish off every wood-glue area, because wood glue won't hold on finish: the two keybox contact lines on the top plate, the contact area on the keybox bottom, and the top of the head box where the cover plate glues on (slide 36)","Don't pencil outlines on surfaces that get finish; the finish seals the lines in. Lay tape on the spot, set the part on it, trace onto the tape, and trim the tape just inside the line","Parts glued with all-purpose glue (dog and drone bases, tail clamp, mute: slides 42, 43 and 47): you can finish over their footprints and scrape or scuff inside each footprint before gluing. Just tape their small mounting slots","Small tape dots on every small hole: strap pins, the tail clamp screw, the bearing screw, the mute bolts, and the tiny hole between the wheel slot and the sound hole","Bridge slots (the two small slots on the tail side of the wheel slot): tape each one separately. The bridge isn't glued and moves for scale adjustment (slide 74), so finish under it is fine and doesn't hurt the sound","Sound hole and wheel slot: plug them from above with craft foam or card set 3 to 5 mm below the surface, so the finish wraps over the edges. Don't tape over the top, and don't use paper towel or tissue, which sheds fibers into wet finish","Key slots (no paint inside them, slide 35): run a strip of tape along the inside of each keybox wall over the row, and push a small foam or card plug into each slot just below the outer face. Put a dot of tape on each of the 6 bolt holes at the wheel end (slide 62)","Light coats. A thick finish dampens the top's tone and can pool and run in the bending panel's slits","Leave all the masking on through every coat and every day of spraying. Pull it once the last coat is dry to the touch, usually 1 to 2 hours later, slowly and back over itself. Don't wait for the full cure: hardened finish bridges the tape edge and chips when you pull. If it doesn't break cleanly, score the edge lightly with a fresh blade first","After it cures, slide a key through every slot. Ease any tight slot with 400 grit on a thin stick, a few strokes at a time. Don't open them more than needed, or the keys rattle"],
+ watch:["Lacquer sprayed in high humidity can blush (turn milky). Spray on a dry day or in an air-conditioned space.","Use a respirator rated for the finish, and ventilate.","Painting the keys? Only the heads, the part outside the keybox. Mask the shafts completely (push them through slots cut in a piece of cardboard), and go light on the sides of each head so neighbors don't rub. Shafts get ink only, never paint (slide 55)."],
+ deps:["fe"]},
+{id:"f1",ph:"fin",slide:null,ref:35,add:true,t:"Clean up, scuff, prep the black parts",
+ d:"This replaces the manual's paint slide (35). Your plan: burst on the top, sides and back, and a mini burst on the head box. Cherry red on the keybox walls and the underside of the keybox lid. Solid black on the top face and edges of the keybox lid, the underside of the keybox, the head cover plate (slide 36) and the tail plate (slide 48).",
+ checks:["Scrape off any dried squeeze-out with a sharp blade","Scuff all shellacked surfaces lightly with 400 or a gray pad so the lacquer bonds, including the head box and the keybox walls. Barely touch the edges.","Sand the black parts to 220: the keybox lid's top face and edges, the keybox underside (around its taped contact area), the head cover plate's top face and the tail plate","Optional: one thin coat of shellac on the black parts for a more even black","Dust everything off"],
+ deps:["fe","s34","s11","s12"]},
+{id:"f2",ph:"fin",slide:null,ref:35,add:true,t:"Mask everything that gets glued or must stay bare",
+ d:"Finish won't bond to glue, and glue won't bond to finish. Don't pencil on the finished surface; the lacquer would seal it in. Lay tape over each spot, set the part on it, trace around the part onto the tape, then lift the part and trim the tape a hair inside the line with a fresh blade (light pressure, so you don't cut into the shellac). The finish then runs right up to the part's edge.",
+ checks:["Sound hole and wheel slot: plug them from above with craft foam or card set 3 to 5 mm below the surface, so the clear wraps over the edges and no spray gets inside. Don't tape over the top, and don't use paper towel or tissue, which sheds fibers into wet lacquer","Top plate: small pieces of tape over the two bridge slots, the tiny hole by the wheel slot, and the mounting slots for the mute, dog base, drone base and tail clamp","Keybox key slots (the manual says no paint inside them): the tape strip on the inside of each wall only stops spray going through. Also plug every slot from the outside so lacquer can't coat the slot walls. Cut short plugs from thin craft foam or cereal-box card, or roll a piece of painter's tape, and push one into each slot until it sits just below the outer face. Pull the plugs when you pull the tape","Keybox: a dot on each of the 6 bolt holes, and the contact area on its bottom face. Its underside goes black, so also run tape along the bottom edge of each red wall","Keybox lid: cover the red underside completely with tape and paper","Top plate: the keybox contact area only (dry-place it as on slide 54). Everything under the keybox that it doesn't touch gets sprayed like the rest of the top","Top plate: footprints for the dog base and drone base (slide 42), the tail clamp (slide 43) and the mute (slide 47)","Head box top, where the head cover plate glues on (slide 36)","Head cover plate: tape the bottom face. Only the top gets painted."],
+ tips:["The edge supports on slides 69 and 70 are only glued later, if at all. Leave them unmasked and scrape a small spot then if you decide to glue."],
+ deps:["f1"]},
+{id:"f3",ph:"fin",slide:null,add:true,t:"Spray the black burst edges",timer:{l:"Between passes",m:30},
+ d:"Use the ColorTone Sunburst Black can for this, not the Black Gloss. Sunburst Black is a see-through tint made for burst fades. Black Gloss is opaque and is only for the solid black parts in the next step.\n\nHold the can about 25 to 30 cm away and keep it moving. Aim at the edges and work inward in light passes. Several light coats blend; one heavy coat makes a hard line. Stop when the fade looks right.\n\nThen the head box, as a mini burst. Each face is small, so hold the can farther away (35 to 40 cm) and use quick, short passes at the edges only. The fade should stay narrow so a clear red center is left on each face. Stop early: you can always add, never take away.\n\nThe keybox walls stay plain red with no toner.\n\nPractice a pass or two on your test piece first, including a small mini-burst patch.",
+ watch:["Nitro lacquer can blush (turn milky) in high humidity. Spray on a dry day, in AC if you can.","On small faces the toner builds fast. If the black creeps too far in, stop. Don't try to fix it with more red.","Ventilation and a respirator."],deps:["f2","p-test"]},
+{id:"f4",ph:"fin",slide:null,add:true,t:"Spray the black parts",timer:{l:"Between coats",m:45},
+ d:"Spray the keybox lid (its outer face and edges), the underside of the keybox (contact area still taped), the top face of the head cover plate and the tail plate in full black with the ColorTone Black Gloss, in light coats until the coverage is even.\n\nFor the keybox underside, set the keybox upside down on blocks and spray straight down so the mist doesn't drift onto the red walls.",
+ watch:["Keep black overspray off the red keybox walls and the head box. Spray the black parts away from them, or cover them."],deps:["f2"]},
+{id:"f5",ph:"fin",slide:null,add:true,t:"Clear topcoat",timer:{l:"Between coats",m:60},
+ d:"Spray 4 to 6 thin clear coats over everything you colored, following the can's recoat time. That includes the head box, the keybox walls (slots still taped), the keybox's black underside and the black parts.\n\nOnce the black has dried, uncover the lid's red underside so it gets the clear too. Keep the keybox contact area taped.\n\nKeep the top plate's finish thin. It's the soundboard, and heavy finish dampens the tone.",
+ watch:["Leave all the masking on through every coat and every day of spraying. Don't pull and re-tape between sessions: each new tape line leaves a small ridge, and pulling tape off fresh coats can lift the edge.","Blue painter's tape is usually rated for about 14 days of clean removal, so a few days of spraying is fine. Keep the work out of direct sun, which bakes the adhesive on."],deps:["f3","f4"]},
+{id:"f6",ph:"fin",slide:null,add:true,t:"Unmask and let it cure",timer:{l:"Cure",m:20160},
+ d:"Pull the tape once the last coat is dry to the touch, usually 1 to 2 hours after spraying. Don't wait for the full cure: by then the lacquer has hardened into a film bridging the tape edge, and pulling it chips the finish. Pull slowly, back over itself at a low angle. If the film doesn't break cleanly at the edge, score along the tape line first with a fresh blade, very lightly.\n\nThen leave it to cure. Nitro needs about two weeks before wet sanding; check the can for water-based lacquer. Start the cure timer, and pick the build back up at the next step once it runs out.",
+ deps:["f5"]},
+{id:"f7",ph:"fin",slide:null,add:true,t:"Level and polish",
+ d:"Wet sand lightly with 1000, then 2000, on a block. Then buff.\n\nThe keybox still isn't glued on at this point, so the top plate under where it will sit is open to sand and buff like the rest of the top. Do the keybox walls separately on the bench.\n\nThen test-slide a key through every slot. If one is tight, ease that slot with 400 grit wrapped around a thin strip of wood or a nail file, a few strokes at a time, and test again. Don't open them up more than needed: loose slots let the keys rattle.",
+ watch:["Barely touch the edges and the black areas. Sanding through the toner leaves light spots that are hard to fix.","Keep the soundboard pass very light."],deps:["f6"]},
+/* ---- hardware ---- */
+{id:"s36",ph:"hw",slide:36,t:"Glue on the head cover plate",glue:"wood",timer:{l:"Clamp",m:45},
+ d:"Glue the black eight-hole cover plate onto the head box, painted face up. Both glue faces should be bare wood from the masking.",deps:["f7"]},
+{id:"s37",ph:"hw",slide:37,glue:"none",bag:"Tuner bag, Bag 1",t:"Install the tuners",
+ d:"Fit the eight machine heads (4 left-hand, 4 right-hand) as shown, and peel off their protective foil. Tighten them from underneath with the included fastening tool and a 6 mm hex key.",
+ tips:["Pre-drill 1 mm holes for the small screws so they don't split the wood."],deps:["s36"]},
+{id:"s38",ph:"hw",slide:38,glue:"none",bag:"Bag 1, tangent bolts",t:"Fit the adjustable nuts",
+ d:"Screw in the three black nut blocks with the same M2.5 x 10 screws used for the tangents. The middle one is the high nut.\n\nThe nominal position is flush with the edge. Later they let you fine-tune the scale length and the string-to-tangent distance.",
+ watch:["Do NOT glue."],deps:["f7"]},
+{id:"s39",ph:"hw",slide:39,off:true,glue:"ap",timer:{l:"Set",m:20},bag:"Bag 1",t:"Assemble the dog base",
+ d:"Glue the small wooden piece into the black dog base as shown.",deps:["p-free"]},
+{id:"s40",ph:"hw",slide:40,off:true,glue:"none",bag:"Bag 1",t:"Build the drone bushes",
+ d:"Hold each drone bush with pliers and screw its bolt in. Three of them.",deps:[]},
+{id:"s41",ph:"hw",slide:41,off:true,glue:"none",bag:"Bag 1",t:"Fit the bushes into the drone base",
+ d:"Fit the three bush assemblies into the black drone base as shown.",deps:["s40"]},
+{id:"s42",ph:"hw",slide:42,glue:"ap",timer:{l:"Set",m:20},t:"Glue the dog base and drone base onto the top",
+ d:"Glue both bases onto their masked footprints on the top plate with all-purpose glue. The dog base goes on the left, the drone base on the right, as shown.",
+ tips:["Before gluing, scrape any finish off inside each footprint. Set the part in place, fence its outline with tape around the outside, lift the part, then scrape or scuff inside the fence with a blade or 220 grit until dull bare wood shows (any dye can stay). These two parts are glue only, so they need wood to grip."],deps:["s39","s41","f7"]},
+{id:"s43",ph:"hw",slide:43,glue:"ap",timer:{l:"Set",m:20},bag:"Bag 1",t:"Fit the tail clamp",
+ d:"Glue the black block with the slot onto its footprint at the tail edge of the top plate, and fix it with its two screws.",
+ tips:["Scuff any finish inside the footprint first: fence the part's outline with tape, then a few passes of 220 inside it. The screws carry the load, so this just helps the glue."],deps:["f7"]},
+{id:"s44",ph:"hw",slide:44,glue:"none",bag:"Bag 1, Bag 3",t:"Screw in the strap pins",
+ d:"Screw the three strap pins into their holes: the tail wall and under the head end, as shown.",deps:["f7"]},
+{id:"s45",ph:"hw",slide:45,glue:"ap",t:"Secure the tail clamp from the side",
+ d:"Drive one screw through the tail wall into the tail clamp (circled on the slide). The manual shows all-purpose glue on this joint.",deps:["s43"]},
+{id:"s46",ph:"hw",slide:46,glue:"none",bag:"Bag 1",t:"Fit the two small supports",
+ d:"Put an M3 nut and bolt into each of the two small black parts, then mount them as shown.",
+ watch:["Do NOT glue."],deps:["s42"]},
+{id:"s47",ph:"hw",slide:47,glue:"ap",timer:{l:"Set",m:20},bag:"Bag 1",t:"Mount the mute",
+ d:"Glue the curved hook-shaped mute onto its footprint near the sound hole and fix it with its screw.",
+ tips:["Scuff any finish inside the footprint first: fence the part's outline with tape, then a few passes of 220 inside it. The screw carries the load, so this just helps the glue."],deps:["f7"]},
+{id:"s48",ph:"hw",slide:48,glue:"none",t:"Place the tail plate",
+ d:"Set the black tail plate in position as shown.",watch:["No glue."],deps:["f7"]},
+{id:"s49",ph:"hw",slide:49,off:true,glue:"none",bag:"Bag 1, Bag 3",t:"Load the nuts and bolts into the bridge",
+ d:"Push M3 nuts into the slots of the bridge. Screw the bolts in from the top, only until they pass through the nuts on the bottom side.\n\nThese bolts later set how hard the strings press on the wheel.",deps:[]},
+{id:"s50",ph:"hw",slide:50,glue:"none",t:"Wire the bridge upright",
+ d:"Place the bridge and run the ~130 mm metal wire through it and the tail plate as in photos 1 to 6. Twist the wire ends together to fix them. Twisting the wire later adjusts the bridge upright.",deps:["s49","s48"]},
+{id:"s51",ph:"hw",slide:51,off:true,glue:"none",bag:"Bag 1",t:"Drill the tuning pegs",
+ d:"On both tuning pegs, drill a 1 mm hole through the side about 1 cm from the tip, and a 1 mm hole into the bottom.",deps:[]},
+{id:"s52",ph:"hw",slide:52,off:true,glue:"ap",timer:{l:"Set",m:20},bag:"Bag 1",t:"Glue the nails into the pegs",
+ d:"Glue a nail into the bottom hole of each peg with all-purpose glue or super glue.",deps:["s51"]},
+{id:"s53",ph:"hw",slide:53,glue:"none",t:"Fit the tuning pegs",
+ d:"Push both pegs into the tail plate as shown.",watch:["No glue."],deps:["s52","s48"]},
+/* ---- keybox, wheel, crank ---- */
+{id:"s54",ph:"kb",slide:54,t:"Glue the keybox onto the body",glue:"wood",timer:{l:"Clamp",m:60},
+ d:"Check that the contact area on the keybox bottom and its footprint on the body (the two contact lines) are bare wood. Glue it on and slide it all the way toward the head.",deps:["f7","s38","s12"]},
+{id:"s55",ph:"kb",slide:55,off:true,glue:"wood",timer:{l:"Clamp",m:45},t:"Glue up the keys",
+ d:"Glue the key heads onto the key shafts as shown.",
+ tips:["Optional: dye the keys with ink (not paint). Furniture wax helps them slide smoothly.","Don't wax anything until any paint or finish on the keys has cured. Lacquer and paint won't stick over wax."],deps:["p-free"]},
+{id:"kk",ph:"kb",slide:null,ref:57,add:true,opt:true,t:"Black gloss on the key heads",timer:{l:"Cure before installing",m:2880},
+ d:"Only the key heads get Black Gloss: the crosspiece you press, which sits outside the keybox. The shaft that slides through the wall slots and carries the tangents stays unpainted. That's why the manual says ink, not paint: any build-up on the shaft makes keys stick in their slots.\n\nThe ColorTone Black Gloss is a pigmented gloss lacquer, but it's a color coat, not the protective layer. Keys take constant finger wear, so put clear over the black like the rest of the instrument.\n\nSequence: sand, one thin coat of shellac, Black Gloss, then Classic Clear. The amber in the clear doesn't show over black.",
+ checks:["Wait until the head-to-shaft glue from the previous step has cured","Sand each head lightly to 220 and knock off any fuzz on the plywood edges","Make a masking jig: cut a row of slots in a piece of cardboard or a box lid, and push each shaft down through a slot so only the head sits on top. Tape over any gap around the shaft. The cardboard masks the shafts and holds the keys upright for spraying","Or, without a jig: wrap painter's tape around the whole shaft, right up to the underside of the head, so the tangent holes are covered","One thin coat of shellac on the heads, for an even black on the plywood edges. Let it dry an hour, then a light scuff with 400","Black Gloss: light coats on the top and front of the heads until the coverage is even","Go easy on the sides of each head. The heads sit side by side in the keybox (slide 57), and a thick finish on the sides can make neighboring keys rub","Classic Clear: 2 or 3 light coats","Unmask, then let the heads cure at least 2 days before installing (timer). Handle them by the shafts","Optional: color the bare shafts with black ink or an alcohol-based marker so they match. Ink doesn't build up, so it won't bind in the slots","After the finish has cured: wax the shafts only, as the manual suggests, so they slide smoothly. Keep wax off the gloss"],
+ watch:["Before installing, test-fit a few finished keys side by side in the keybox. If neighboring heads rub, sand the side of one head lightly with 400 until they move freely.","Ventilation and a respirator."],deps:["s55","p-spray"]},
+{id:"s56",ph:"kb",slide:56,off:true,glue:"none",t:"Fit the tubes onto the tangents",
+ d:"Slide a rubber tube onto each tangent as far as it goes, then cut off the tip. There are 72 of them.",deps:[]},
+{id:"s57",ph:"kb",slide:57,glue:"none",bag:"Tangent bolts",t:"Install the keys and tangents",
+ d:"Fit the keys into the keybox slots and bolt the tangents on with the M2.5 x 10 bolts.\n\nThe keys marked in the inset take the extra narrow tangents with the longer M2.5 x 18 screws.",deps:["s54","s55","s56"]},
+{id:"s58",ph:"kb",slide:58,glue:"none",t:"Stick in the felt strip",
+ d:"Peel the backing off the self-adhesive felt and stick it inside the keybox, just above the keys. It quiets the keys hitting the box.",deps:["s57"]},
+{id:"s59",ph:"kb",slide:59,off:true,glue:"none",bag:"Bag 3",t:"Attach the hinges to the lid",
+ d:"Screw the three hinges onto the lid as shown.",deps:["f7"]},
+{id:"s60",ph:"kb",slide:60,glue:"none",t:"Attach the lid to the keybox",
+ d:"Screw the hinged lid onto the keybox.",
+ tips:["Pre-drill 1 mm holes first. It reduces the risk of the wood splitting."],deps:["s58","s59"]},
+{id:"s61",ph:"kb",slide:61,off:true,glue:"none",bag:"Bag 1, Bag 3",t:"Assemble the melody mutes",
+ d:"Fit an M3 nut into each of the three hook-shaped mutes. A bolt helps pull the nut into place.",deps:[]},
+{id:"s62",ph:"kb",slide:62,glue:"none",t:"Mount the melody mutes",
+ d:"Bolt the three mutes to the keybox from the outside. You can adjust them later so the strings don't vibrate against them.",deps:["s61","s54"]},
+{id:"s63",ph:"kb",slide:63,glue:"none",t:"Install the wheel and shaft",
+ d:"Remove the paper from the wheel slot. Lower the wheel in from the top, then screw the shaft into the wheel through the tail wall.",deps:["f7","s23"]},
+{id:"s64",ph:"kb",slide:64,glue:"none",t:"Fix the outer bearing",
+ d:"Fix the bearing at the tail wall in place with its screw.",
+ err:"The slide says a 2.5 x 13 screw, but the kit list only has 2.5 x 16. Use the 2.5 x 16, the smallest screw in the kit.",deps:["s63"]},
+{id:"s65",ph:"kb",slide:65,opt:true,glue:"none",t:"True the wheel (now or later)",
+ d:"The wheel may need truing to be perfectly round. Tape the soundboard around the wheel, turn the wheel with the crank or a drill, and scrape the rim with a sharp chisel or utility blade until it is round. Finish with fine sandpaper.\n\nThe manual links a video: youtu.be/JkPwHBvdx8w",
+ watch:["Use low-tack painter's tape, and only once the finish has fully cured."],deps:["s64"]},
+{id:"s66",ph:"kb",slide:66,off:true,glue:"lock",bag:"Bag 2",t:"Assemble the crank",
+ d:"Assemble the crank, bearings, spacer, ring, nut and bolt as shown. Gently press the knob onto the bearings.",
+ watch:["Use Loctite or super glue on the bolt so it can't work loose."],deps:[]},
+{id:"s67",ph:"kb",slide:67,glue:"none",t:"Mount the crank",d:"Fit the crank onto the end of the shaft as shown.",deps:["s64","s66"]},
+/* ---- strings ---- */
+{id:"s68",ph:"str",slide:68,glue:"none",t:"Place the dog and knot the strings",
+ d:"Place the buzzing bridge (dog). It must be free to slide and vibrate.\n\nTie a figure-8 knot in the end of each trumpet string and the high melody string so they can be mounted.",watch:["No glue."],deps:["s42","s46"]},
+{id:"s69",ph:"str",slide:69,opt:true,glue:"ap",t:"Place the drone edge support",
+ d:"Set the fan-shaped support at the edge as shown. Gluing is optional and best done later, after the strings have settled its position.",
+ tips:["If you glue it, scrape a small footprint back to bare wood first."],deps:["f7"]},
+{id:"s70",ph:"str",slide:70,opt:true,glue:"ap",t:"Place the trumpet edge support",
+ d:"Set the support at the edge as shown. Same as the last step: glue is optional and best done after adjusting with the strings.",deps:["f7"]},
+{id:"s71",ph:"str",slide:71,glue:"none",t:"Read the string layout",
+ d:"The suggested tuning, which you can change later:\n\nDrones: C2 (65.4 Hz) 1/8 cello C, G2 (98.0 Hz) 1/8 cello G, A2 (110 Hz) 1/8 cello D.\n\nMelody: C4 (262 Hz) 0.97 gut, C3 (130.8 Hz) 16.5\" viola C, G3 (196 Hz) 16.5\" viola G.\n\nTrumpets: G3 (196 Hz) 1.0 gut or fluorocarbon, C4 (262 Hz) 0.85 gut or fluorocarbon.",
+ err:"The slide lists G2 as 97.5 Hz. G2 is 98.0 Hz.",deps:[]},
+{id:"s72",ph:"str",slide:72,glue:"none",t:"Mount the strings",
+ d:"String the instrument following the four photos and the layout on slide 71.",
+ deps:["s37","s53","s50","s60","s62","s67","s68","s69","s70","s71"]},
+{id:"s73",ph:"str",slide:73,glue:"none",t:"Tie on the tirant",
+ d:"Fold a piece of string in half and pass the loop under the trumpet string. Pull the doubled string through the loop to knot it around the trumpet string, then attach it to the tuning peg.",deps:["s72"]},
+{id:"s74",ph:"str",slide:74,glue:"none",t:"Adjust the scale length",
+ d:"1. Make sure the bridge is upright by tightening the wire.\n\n2. Put the tangents in their middle position, and tune the strings so the middle C is in tune.\n\n3. Check high C on one string. Too low: shift the bridge toward the wheel. Too high: shift it away. Retune and repeat.\n\n4. Check open C. Too high: shift the adjustable nut toward the head. Retune and repeat, then do the other strings.\n\nAfter that, tune the other notes by rotating each tangent.",deps:["s73"]},
+{id:"s75",ph:"str",slide:75,glue:"none",t:"Set up the strings on the wheel",
+ d:"Rosin the wheel rim by holding rosin against it while turning. No rosin, no sound; too much sounds scratchy (a cloth removes excess).\n\nSet string pressure with the bridge bolts so the strings just touch the wheel. Too light sounds thin, too heavy sounds scratchy.\n\nAdd a little cotton where the strings touch the wheel. Too much on a melody string makes it hard to keep the two melody strings in tune.",
+ tips:["If a hurdy gurdy sounds like two cats fighting at first, that is normal. Setup takes patience."],deps:["s74"]},
+{id:"s76",ph:"str",slide:76,glue:"none",t:"Learn the mutes",
+ d:"Most beginners play with one or both melody strings. Lift any string you don't want sounding off the wheel and onto its mute position. Trumpet and drone strings work the same way, usually with trumpet and drone in the same tuning or chord.",deps:["s75"]},
+/* ---- capos ---- */
+{id:"s77",ph:"capo",slide:77,off:true,opt:true,glue:"none",bag:"Bag 4",t:"Load nuts into the trumpet capo base",
+ d:"Press the M3 nuts into the trumpet capo base as shown.",deps:[]},
+{id:"s79",ph:"capo",slide:79,also:[78],off:true,opt:true,glue:"none",bag:"Bag 4",t:"Prepare the trumpet capos",
+ d:"Slide 78 tells the upper trumpet capo and the drone capo apart. Insert the nyloc nuts from the bottom into the upper and lower trumpet capos.",deps:[]},
+{id:"s80",ph:"capo",slide:80,off:true,opt:true,glue:"none",t:"Attach the capo levers",
+ d:"Bolt the levers onto the two trumpet capos as shown.",watch:["No glue."],deps:["s79"]},
+{id:"s81",ph:"capo",slide:81,off:true,opt:true,glue:"none",t:"Assemble the trumpet capo",
+ d:"Bolt both capos onto the base as shown.",watch:["No glue."],deps:["s77","s80"]},
+{id:"s82",ph:"capo",slide:82,opt:true,glue:"none",t:"Mount the trumpet capo",
+ d:"Check the tuning before screwing the base down. The M3 bolts allow only small tuning adjustments.",deps:["s81","s72"]},
+{id:"s83",ph:"capo",slide:83,off:true,opt:true,glue:"none",t:"Assemble the drone capo",
+ d:"Fit the nyloc captive nut into the drone capo and add the lever as shown.",watch:["No glue."],deps:[]},
+{id:"s85",ph:"capo",slide:85,also:[84],opt:true,glue:"none",t:"Mount the drone capo base",
+ d:"Assemble the drone capo with its base and screw it on. Slide it as low as possible, right against the string support.",
+ err:"Slide 84 shows an older drone capo base. Slide 85 is the v2 version. Follow whichever matches the part in your kit.",deps:["s83","s72"]}
+];
+const ERRATA = [
+  ["Slide 64","The bearing screw is listed as 2.5 x 13 mm, but the kit list (slides 5 and 22) only has 2.5 x 16 mm. Use 2.5 x 16."],
+  ["Slide 71","G2 is listed as 97.5 Hz. The correct value is 98.0 Hz."],
+  ["Slide 86","The revision log refers to old slide numbers. Scale length is now slide 74, and the narrow tangents note is slide 57."],
+  ["Slide 6","\"Drove lever\" in the Bag 4 list is the drone lever."],
+  ["Slides 84 and 85","Two drone capo bases are shown. Slide 85 is the v2 version; follow the one that matches your part."],
+  ["Slide 33","Cherry burst guide only: the manual wets the top plate to bend it. With a sealed show face, skip that or dampen only the underside."]
+];
+
+
+/* Critical prerequisites: [step, reason]. Only these raise a red flag.
+   A step that is skipped for now never satisfies them; an optional step skipped for good does. */
+const NEED = {
+  "p-test":[["p-mix","Mix the dyes before you test them."]],
+  s15:[["s14","This frame joins the two side assemblies from that step."],["s10","The head box is built onto the laminated bottom."]],
+  s17:[["s15","The tuner plate closes this frame."],["s16","This is the plate that gets glued on here."]],
+  fa2:[["fa1","Mark the show faces first so you don't finish the wrong side."]],
+  fa5:[["fa2","The grain has to be raised and knocked back before any dye goes on."],["p-test","Dial in your red on the test piece first."]],
+  fa5m:[["fa5","The red goes on before the glue areas are protected for shellac."]],
+  fa6:[["fa5","Shellac locks in the dye, so the red has to be on first."],["fa5m","Protect the glue areas and holes first. Shellac on them weakens the glue joints and tightens part fits."]],
+  s18:[["s10","The frames glue onto the laminated bottom."],["fa6","Finish session A first. The frames go on top of the finished bottom."]],
+  s19:[["s18","The bass bar sits across these frames."],["s17","The head box is in place on the bottom before the bass bar goes on."],["s13","This is the bass bar assembly that goes in here."]],
+  s20:[["s19","The tail wall attaches to this frame."],["s9","This is the tail wall that goes on here."],["fa6","Finish the tail wall before it's glued into the body."]],
+  s22:[["s21","The bearing has to be in its holder."],["s18","The holder screws onto the inner frame."]],
+  s23:[["s22","The shaft runs into this bearing."],["s20","The shaft passes through the tail wall."]],
+  s24:[["s20","This panel fits into the assembled frame."]],
+  s25:[["s20","This panel fits into the assembled frame."]],
+  s26:[["s20","These strips fit into the assembled frame."]],
+  s27:[["s20","These strips fit into the assembled frame."]],
+  s28:[["s20","This panel fits into the assembled frame."],["fa6","Dye and shellac the panel flat before it's bent in. It's much harder to dye evenly once curved."]],
+  fb:[["s20","You dry-fit the sides on the body to mark them."],["p-test","Check the black and dial in the red on your test piece first."]],
+  s29:[["fb","Finish the sides before they go on. Once they're glued to the body, dyeing them evenly is much harder."]],
+  s30:[["s29","The strips glue to the inside of the sides."]],
+  s31:[["s30","Shape the edges after the strips are on, so everything is filed flush together."]],
+  s33:[["s31","Edges that don't follow the curve leave gaps under the top."],["s23","Sort out the shaft fit first. Once the top is on, the inner bearing is hard to reach."],["s19","The bass bar has to be in place under the top."],["fa6","The top plate's show face must be finished before it goes on."]],
+  s34:[["s33","This strip glues on at the top plate."]],
+  "p-spray":[["p-test","You spray over the dyed and shellacked test piece."]],
+  f1:[["s34","The body has to be fully assembled before the finish phase."]],
+  f2:[["f1","Clean and scuff before masking. Tape doesn't stick well over dust."]],
+  f3:[["f2","Anything not masked gets lacquer, and glue won't bond to lacquer later."],["p-spray","Try the toner and clear on your test piece first."]],
+  f4:[["f2","Masking keeps spray out of the key slots and off the glue spots."],["s11","The lid has to be built before it can be sprayed."]],
+  f5:[["f3","The clear goes over the burst."],["f4","The clear goes over the black parts."]],
+  f6:[["f5","There's nothing to cure until the clear is on."]],
+  f7:[["f6","Sanding before the lacquer cures can cut through it or leave dull spots that show later."]],
+  s36:[["f7","Hardware goes on after the finish is cured and polished."]],
+  s37:[["s36","The tuners mount through this plate."]],
+  s38:[["f7","Hardware goes on after the finish is cured and polished."]],
+  s41:[["s40","These are the bushes that fit into the base."]],
+  s42:[["s39","This is the dog base that gets glued on."],["s41","This is the drone base that gets glued on."],["f7","Hardware goes on after the finish is cured and polished."]],
+  s43:[["f7","Hardware goes on after the finish is cured and polished."]],
+  s44:[["f7","Hardware goes on after the finish is cured and polished."]],
+  s45:[["s43","This screw goes into the tail clamp."]],
+  s46:[["s42","These supports mount by the bases."]],
+  s47:[["f7","Hardware goes on after the finish is cured and polished."]],
+  s48:[["f7","Hardware goes on after the finish is cured and polished."]],
+  s50:[["s49","The bridge needs its nuts and bolts first."],["s48","The wire runs through the tail plate."]],
+  s52:[["s51","The nail goes into the hole drilled in that step."]],
+  s53:[["s52","Let the glue on the pegs set first."],["s48","The pegs fit into the tail plate."]],
+  s54:[["f7","The keybox glues onto the finished, cured body."],["s12","This is the keybox that gets glued on."]],
+  s57:[["s54","The keys go into the keybox on the body."],["s55","The keys have to be glued up."],["kk","Let the black gloss on the key heads cure before handling them into the slots."],["s56","The tangents need their tubes."]],
+  s58:[["s57","The felt goes just above the installed keys."]],
+  s59:[["s11","This is the lid that gets the hinges."],["f7","Finish the lid before hardware goes on."]],
+  s60:[["s59","The hinges have to be on the lid."],["s54","The lid attaches to the keybox on the body."]],
+  s62:[["s61","The mutes need their nuts."],["s54","The mutes bolt to the keybox on the body."]],
+  s63:[["s33","The wheel drops in through the slot in the top plate."],["s23","The shaft has to fit the inner bearing."],["f7","Install the wheel after the finish is done."]],
+  s64:[["s63","The bearing goes on the installed shaft."]],
+  s65:[["s64","The wheel has to be installed and fixed."]],
+  s67:[["s64","The crank mounts on the installed shaft."],["s66","This is the crank assembled in that step."]],
+  s68:[["s42","The dog sits on the dog base."],["s46","The dog sits between these supports."]],
+  s72:[["s37","The strings wind onto the tuners."],["s50","The strings run over the bridge."],["s57","Install the keys before stringing. It's very hard with strings on."],["s64","The strings run over the wheel."],["s68","The dog has to be in place before the trumpet string goes on."]],
+  s73:[["s72","The tirant ties onto the trumpet string."],["s53","The tirant attaches to the tuning peg."]],
+  s74:[["s73","Tune with everything strung up."]],
+  s75:[["s72","The wheel is set up with the strings on."]],
+  s80:[["s79","The levers attach to the prepared capos."]],
+  s81:[["s77","The base needs its nuts."],["s80","The capos need their levers."]],
+  s82:[["s81","Mount the assembled capo."],["s72","Check the tuning before screwing it down, so the strings must be on."]],
+  s85:[["s83","Mount the assembled capo."],["s72","The capo sits against the strung string support."]]
+};
+/* index */
+/* finish plans: fx steps only with the cherry burst guide, fz steps only with "your own finish" */
+const FX = new Set(["p-mix","p-test","fa1","fa2","fa5","fa5m","fa6","fb","p-spray","f1","f2","f3","f4","f5","f6","f7","kk"]);
+STEPS.forEach(s=>{ if(FX.has(s.id)) s.fx=true; if(s.id==="fz") s.fz=true; if(s.deps.includes("f7")) s.deps.push("fz"); });
+for(const k in NEED){ if(NEED[k].some(([d])=>d==="f7")) NEED[k].push(["fz","Hardware goes on after your finish has cured."]); }
+let ORDER = STEPS.map(s=>s.id);
+const BY = Object.fromEntries(STEPS.map((s,i)=>[s.id,Object.assign(s,{i,o:i})]));
+let N = STEPS.length, VIS = STEPS.slice();
+for(const k in NEED){ if(!BY[k]) console.warn("NEED for unknown step",k); NEED[k].forEach(([d])=>{ if(!BY[d]) console.warn("NEED unknown dep",k,d); else if(BY[d].i>BY[k].i) console.warn("NEED dep after step",k,d); }); }
+
+/* ---------------- state ---------------- */
+const LS_KEY = "cobol-companion-v1";
+let S = {v:1, done:{}, skipped:{}, later:{}, notes:{}, checks:{}, timers:[], cur:"p-mat", adj:{}, updatedAt:0};
+try{ const raw = localStorage.getItem(LS_KEY); if(raw){ const o=JSON.parse(raw); if(o&&o.v===1) S=Object.assign(S,o); } }catch(e){}
+if(S.cur==="hb") S.cur="s18";
+if(S.cur==="kf1"||S.cur==="kf2") S.cur="fb";
+if(!BY[S.cur]) S.cur="p-mat";
+if(!S.later) S.later={};
+if(S.finish===undefined) S.finish = STEPS.some(s=>s.fx && (S.done[s.id]||S.skipped[s.id]||S.later[s.id])) ? "custom" : null;
+function mode(){ return S.finish==="custom" ? "custom" : "simple"; }
+function vis(s){ return s.fx ? mode()==="custom" : s.fz ? mode()!=="custom" : true; }
+function reindex(){
+  VIS = STEPS.filter(vis); VIS.forEach((s,k)=>s.i=k); ORDER = VIS.map(s=>s.id); N = VIS.length;
+  if(!vis(BY[S.cur])){ const nx = STEPS.slice(BY[S.cur].o).find(vis) || VIS[0]; S.cur = nx.id; }
+}
+/* text items starting with %B% show only with the cherry burst guide, %O% only with your own finish */
+const keepT = t => t.startsWith("%B%") ? mode()==="custom" : t.startsWith("%O%") ? mode()!=="custom" : true;
+const stripT = t => (t.startsWith("%B%")||t.startsWith("%O%")) ? t.slice(3) : t;
+reindex();
+
+let remote = null, syncMode = "local", writeChain = Promise.resolve(), writeTimer = null;
+function save(soft){
+  S.updatedAt = Date.now();
+  try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
+  if(remote){ clearTimeout(writeTimer); writeTimer = setTimeout(pushRemote, soft?1500:400); }
+}
+function pushRemote(){
+  if(!remote) return;
+  const body = {state: JSON.parse(JSON.stringify(S))};
+  writeChain = writeChain.then(()=>remote.set(body)).catch(err=>{
+    if(err && (err.code==="invalid_argument"||err.code==="revoked"||err.code==="not_granted")){ remote=null; setSync("local"); }
+  });
+}
+function setSync(m){
+  syncMode = m; const el = document.getElementById("sync");
+  el.textContent = m==="acct" ? "Saved to your account" : "Saving in this browser";
+  el.className = "sync" + (m==="acct" ? " acct" : "");
+  el.title = m==="acct" ? "Progress, notes and timers follow you to any device where you open this page." : "Progress is kept in this browser only.";
+}
+async function initRemote(){
+  try{
+    if(!window.claude || !window.claude.use) return;
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if(!db || !user) return;
+    const uid = await user.id(); if(!uid) return;
+    const ref = db.collection("data/users/" + uid).doc("build");
+    const snap = await ref.get();
+    remote = ref; setSync("acct");
+    const r = snap.exists ? (snap.data()||{}).state : null;
+    if(r && r.v===1 && (r.updatedAt||0) > (S.updatedAt||0)){
+      S = Object.assign({v:1,done:{},skipped:{},later:{},notes:{},checks:{},timers:[],cur:"p-mat",adj:{},updatedAt:0}, JSON.parse(JSON.stringify(r)));
+      if(S.cur==="hb") S.cur="s18";
+if(S.cur==="kf1"||S.cur==="kf2") S.cur="fb";
+if(!BY[S.cur]) S.cur="p-mat";
+      reindex(); syncFinSel();
+      try{ localStorage.setItem(LS_KEY, JSON.stringify(S)); }catch(e){}
+      renderAll();
+    } else if((S.updatedAt||0) > ((r&&r.updatedAt)||0)) { pushRemote(); }
+  }catch(e){ remote=null; setSync("local"); }
+}
+
+/* ---------------- helpers ---------------- */
+const $ = id => document.getElementById(id);
+const esc = s => String(s).replace(/[&<>"]/g, c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c]));
+const isDone = id => !!(S.done[id] || S.skipped[id]) || (BY[id] && !vis(BY[id]));
+const now = () => Date.now();
+const activeTimer = id => S.timers.find(t=>t.id===id && now()<t.ends);
+const curing = id => !!activeTimer(id);
+const isLater = id => !!S.later[id] && !isDone(id);
+/* critical prerequisites that are not satisfied: missing (not done, or only skipped for now) or still curing */
+function critIssues(s){
+  return (NEED[s.id]||[]).filter(([d])=>BY[d]&&vis(BY[d])).map(([d,why])=>({d,why,miss:!isDone(d),cure:isDone(d)&&curing(d)})).filter(x=>x.miss||x.cure);
+}
+/* earlier non-critical steps left undone without being deliberately skipped */
+function softPending(s){
+  const crit = new Set((NEED[s.id]||[]).map(x=>x[0]));
+  return s.deps.filter(d=>!crit.has(d) && BY[d] && BY[d].i<s.i && !isDone(d) && !isLater(d));
+}
+function stepNo(s){ return s.i+1; }
+function fmtDur(ms){
+  if(ms<=0) return "0:00";
+  const t = Math.round(ms/1000), d=Math.floor(t/86400), h=Math.floor(t%86400/3600), m=Math.floor(t%3600/60), sec=t%60;
+  if(d>0) return d+"d "+h+"h";
+  if(h>0) return h+":"+String(m).padStart(2,"0")+":"+String(sec).padStart(2,"0");
+  return m+":"+String(sec).padStart(2,"0");
+}
+function fmtMin(m){ if(m>=1440){ const d=m/1440; return (Number.isInteger(d)?d:d.toFixed(1))+" days"; } if(m>=60){ const h=Math.floor(m/60), r=m%60; return h+" h"+(r?" "+r+" min":""); } return m+" min"; }
+function timerMin(s){ return (S.adj[s.id] ?? s.timer.m); }
+function glueChip(g){
+  if(g==="wood") return '<span class="chip wood">Wood glue</span>';
+  if(g==="ap") return '<span class="chip ap">All-purpose glue</span>';
+  if(g==="lock") return '<span class="chip ap">Thread locker or super glue</span>';
+  if(g==="none") return '<span class="chip none">No glue</span>';
+  return "";
+}
+let toastT=null;
+function toast(msg){ let el=document.querySelector(".toast"); if(!el){ el=document.createElement("div"); el.className="toast"; el.setAttribute("role","status"); document.body.appendChild(el);} el.textContent=msg; el.hidden=false; clearTimeout(toastT); toastT=setTimeout(()=>{el.hidden=true},2600); }
+
+/* ---------------- rail ---------------- */
+function renderRail(){
+  const rail = $("rail"); let h=""; const nextUp = (VIS.find(x=>!isDone(x.id)&&!isLater(x.id))||{}).id;
+  const lat = VIS.filter(x=>isLater(x.id));
+  if(lat.length){
+    h += `<div class="ph later"><h2>Skipped for now<span>${lat.length}</span></h2></div>`;
+    for(const s of lat) h += `<button type="button" class="si lat${s.id===S.cur?" cur":""}" data-id="${s.id}"><span class="dot l" aria-hidden="true"></span><span class="t">${esc(s.t)}</span><span class="s">#${stepNo(s)}</span></button>`;
+  }
+  for(const p of PHASES){
+    const list = VIS.filter(s=>s.ph===p.k); if(!list.length) continue; const dn = list.filter(s=>isDone(s.id)).length;
+    h += `<div class="ph"><h2>${esc(p.n)}<span>${dn}/${list.length}</span></h2></div>`;
+    for(const s of list){
+      let dot="dot";
+      if(S.skipped[s.id]) dot+=" k"; else if(S.done[s.id]) dot+=(curing(s.id)?" c":" d"); else if(isLater(s.id)) dot+=" l"; else if(s.id===nextUp) dot+=" r";
+      const sl = s.slide ? "S"+s.slide : (s.add ? "added" : "");
+      h += `<button type="button" class="si${s.id===S.cur?" cur":""}${S.skipped[s.id]?" skip":""}" data-id="${s.id}" ${s.id===S.cur?'aria-current="step"':""}><span class="${dot}" aria-hidden="true"></span><span class="t">${esc(s.t)}</span><span class="s">${sl}</span></button>`;
+    }
+  }
+  rail.innerHTML = h;
+  const cur = rail.querySelector(".si.cur:not(.lat)"); if(cur && lastRailCur!==S.cur){ lastRailCur=S.cur; const r=cur.getBoundingClientRect(), rr=rail.getBoundingClientRect(); if(r.top<rr.top||r.bottom>rr.bottom) cur.scrollIntoView({block:"center"}); }
+}
+$("rail").addEventListener("click", e=>{ const b=e.target.closest(".si"); if(b) go(b.dataset.id); });
+
+/* ---------------- card ---------------- */
+let lastCardId=null, lastRailCur=null;
+/* turn "slide 42" / "slides 42, 43 and 47" in escaped text into buttons that open that manual page */
+function linkSlides(html){
+  return html.replace(/\b(slides?)(\s+)(\d{1,2}(?:(?:,\s*|\s+and\s+|\s+or\s+|\s+to\s+)\d{1,2})*)/gi, (m,word,sp,nums)=>
+    word+sp+nums.replace(/\d{1,2}/g, n=>(+n>=1&&+n<=86)?`<button type="button" class="sref" data-slide="${n}" title="Open manual slide ${n}">${n}</button>`:n));
+}
+const tx = t => linkSlides(esc(t));
+function paras(t){ return t.split("\n\n").filter(keepT).map(p=>`<p>${tx(stripT(p))}</p>`).join(""); }
+function renderCard(){
+  const s = BY[S.cur], ph = PHASES.find(p=>p.k===s.ph), card=$("card");
+  const t = activeTimer(s.id);
+  let h = `<div class="eyebrow"><span>${esc(ph.n)}</span><span>\u00B7</span><span>Step ${stepNo(s)} of ${N}</span></div>`;
+  h += `<h3>${esc(s.t)}</h3><div class="chips">`;
+  if(s.slide) h += `<button type="button" class="chip sl" data-slide="${s.slide}">Manual slide ${s.slide}</button>`;
+  (s.also||[]).forEach(a=> h += `<button type="button" class="chip sl" data-slide="${a}">Also slide ${a}</button>`);
+  if(s.add) h += `<span class="chip add">Added step${s.ref?" \u00B7 ref slide "+s.ref:""}</span>`;
+  h += glueChip(s.glue);
+  if(s.bag) h += `<span class="chip">${esc(s.bag)}</span>`;
+  if(s.opt) h += `<span class="chip">Optional</span>`;
+  h += `</div>`;
+  if(S.done[s.id] && t) h += `<div class="state cure">Done. ${esc(t.label)} running: <span class="mono" data-tleft="${s.id}">${fmtDur(t.ends-now())}</span> left.</div>`;
+  else if(S.done[s.id]) h += `<div class="state done">Done on ${new Date(S.done[s.id]).toLocaleDateString(undefined,{month:"short",day:"numeric"})}.</div>`;
+  else if(S.skipped[s.id]) h += `<div class="state blk">Not doing this optional step.</div>`;
+  else if(isLater(s.id)) h += `<div class="state later">Skipped for now. Come back and mark it done once you've done it. Steps that can't happen without it will warn you.</div>`;
+  if(!isDone(s.id)){
+    const ci = critIssues(s);
+    if(ci.length){
+      h += `<div class="state stop" role="alert"><h4>Don't start this step yet</h4><ul>` + ci.map(x=>{
+        const st = BY[x.d];
+        const what = x.cure ? `<b>${esc(st.t)}</b> is still curing (<span class="mono" data-tleft="${x.d}">${fmtDur(activeTimer(x.d).ends-now())}</span> left).`
+                            : `<b>${esc(st.t)}</b> (step ${stepNo(st)}) isn't done${isLater(x.d)?". You skipped it for now":""}.`;
+        return `<li>${what} ${esc(x.why)}${x.miss?` <button type="button" class="chip" data-go="${x.d}">Go to step ${stepNo(st)}</button>`:""}</li>`;
+      }).join("") + `</ul></div>`;
+    }
+    const sp = softPending(s);
+    if(sp.length) h += `<div class="state blk">Earlier steps not marked done yet: ${sp.map(d=>esc(BY[d].t)).join(", ")}.</div>`;
+  }
+  h += `<div class="body">${paras(s.d)}</div>`;
+  if(s.id==="p-mat") h += `<div class="box finpick"><h4>Finish plan${S.finish?"":": pick one"}</h4><p>Your own finish follows the manual and paints once the body is closed (slide 35), with one step of general masking and finishing notes. The cherry burst guide dyes and seals parts flat during the body build, then sprays a black burst edge and clear lacquer. Steps for the other plan are hidden.</p><div class="actions"><button type="button" class="btn${S.finish&&mode()==="simple"?" pri":""}" data-fin="simple">Your own finish</button><button type="button" class="btn${S.finish==="custom"?" pri":""}" data-fin="custom">Cherry burst guide</button></div></div>`;
+  if(s.checks){
+    const ck = S.checks[s.id]||{};
+    h += `<ul class="checks">` + s.checks.map((c,i)=>[c,i]).filter(([c])=>keepT(c)).map(([c,i])=>[stripT(c),i]).map(([c,i])=>`<li><label for="ck-${s.id}-${i}"><input type="checkbox" id="ck-${s.id}-${i}" data-ck="${i}" ${ck[i]?"checked":""}><span class="${ck[i]?"ck":""}">${tx(c)}</span></label></li>`).join("") + `</ul>`;
+  }
+  const wl=(s.watch||[]).filter(keepT); if(wl.length) h += `<div class="box watch"><h4>Watch for</h4><ul>${wl.map(w=>`<li>${tx(stripT(w))}</li>`).join("")}</ul></div>`;
+  if(s.err) h += `<div class="box errata"><h4>Manual correction</h4>${tx(s.err)}</div>`;
+  const tl=(s.tips||[]).filter(keepT); if(tl.length) h += `<div class="box tipbox"><h4>Tip</h4><ul>${tl.map(w=>`<li>${tx(stripT(w))}</li>`).join("")}</ul></div>`;
+  if(s.timer && !isDone(s.id)){
+    const m = timerMin(s), step = m>=1440?1440:(m>=120?15:5);
+    h += `<div class="timerbox"><span class="lab">${esc(s.timer.l)} timer</span><button type="button" class="adj" data-adj="-${step}" aria-label="Shorter">&minus;</button><span class="val">${fmtMin(m)}</span><button type="button" class="adj" data-adj="${step}" aria-label="Longer">+</button></div>`;
+  }
+  h += `<div class="actions">`;
+  if(!isDone(s.id)){
+    if(s.timer) h += `<button type="button" class="btn pri" data-act="donet">Done, start ${esc(s.timer.l.toLowerCase())} timer</button><button type="button" class="btn" data-act="done">Done, no timer</button>`;
+    else h += `<button type="button" class="btn pri" data-act="done">Mark done</button>`;
+    if(isLater(s.id)) h += `<button type="button" class="btn" data-act="unlater">Remove from skipped</button>`;
+    else h += `<button type="button" class="btn" data-act="later">Skip for now</button>`;
+    if(s.opt) h += `<button type="button" class="btn" data-act="skip">Not doing this</button>`;
+  } else {
+    h += `<button type="button" class="btn" data-act="undo">Undo</button>`;
+    if(t) h += `<button type="button" class="btn" data-act="stopt">Stop timer</button>`;
+  }
+  h += `</div>`;
+  h += `<div class="nav"><button type="button" class="btn" data-act="prev" ${s.i===0?"disabled":""}>&#8249; Previous</button><button type="button" class="btn" data-act="next" ${s.i===N-1?"disabled":""}>Next &#8250;</button></div>`;
+  h += `<label class="lbl" for="note">Your notes</label><textarea id="note" placeholder="What you did differently, what to watch next time, measurements...">${esc(S.notes[s.id]||"")}</textarea>`;
+  h += `<p class="hint"><span class="kbd">&larr;</span> <span class="kbd">&rarr;</span> move between steps \u00B7 <span class="kbd">D</span> mark done \u00B7 <span class="kbd">S</span> skip for now \u00B7 <span class="kbd">Z</span> zoom the slide</p>`;
+  card.innerHTML = h;
+  if(lastCardId!==s.id){ card.scrollTop = 0; const mc=$("mainCol"); if(mc) mc.scrollTop = 0; lastCardId=s.id; }
+}
+$("card").addEventListener("click", e=>{
+  const s = BY[S.cur]; const b = e.target.closest("button"); if(!b) return;
+  unlockAudio();
+  if(b.dataset.slide){ e.preventDefault(); showSlide(+b.dataset.slide, true); const vr=$("viewer").getBoundingClientRect(); if(vr.top>innerHeight-120||vr.bottom<60) $("viewer").scrollIntoView({behavior:"smooth",block:"start"}); return; }
+  if(b.dataset.go){ go(b.dataset.go); return; }
+  if(b.dataset.fin){ setFinish(b.dataset.fin); return; }
+  if(b.dataset.adj){
+    const step=+b.dataset.adj, m=Math.max(5, timerMin(s)+step);
+    S.adj[s.id]=m; save(true); renderCard(); return;
+  }
+  const a = b.dataset.act;
+  if(a==="done"||a==="donet") markDone(s, a==="donet");
+  else if(a==="skip"){ S.skipped[s.id]=now(); delete S.later[s.id]; STEPS.filter(x=>x.skipWith===s.id && !S.done[x.id]).forEach(x=>{ S.skipped[x.id]=now(); delete S.later[x.id]; }); save(); advance(s); }
+  else if(a==="later") skipLater(s);
+  else if(a==="unlater"){ delete S.later[s.id]; save(); renderAll(); }
+  else if(a==="undo"){ delete S.done[s.id]; delete S.skipped[s.id]; delete S.later[s.id]; STEPS.filter(x=>x.skipWith===s.id && S.skipped[x.id]).forEach(x=>delete S.skipped[x.id]); S.timers=S.timers.filter(t=>t.id!==s.id); save(); renderAll(); }
+  else if(a==="stopt"){ S.timers=S.timers.filter(t=>t.id!==s.id); save(); renderAll(); }
+  else if(a==="prev") go(ORDER[s.i-1]);
+  else if(a==="next") go(ORDER[s.i+1]);
+});
+$("card").addEventListener("change", e=>{
+  const c = e.target.closest("[data-ck]"); if(!c) return;
+  const id=S.cur; S.checks[id]=S.checks[id]||{}; S.checks[id][c.dataset.ck]=c.checked; save(true);
+  c.nextElementSibling.className = c.checked?"ck":"";
+});
+let noteT=null;
+$("card").addEventListener("input", e=>{
+  if(e.target.id!=="note") return;
+  S.notes[S.cur]=e.target.value; clearTimeout(noteT); noteT=setTimeout(()=>save(true),600);
+});
+function skipLater(s){ S.later[s.id]=now(); save(); toast("Skipped for now. It's listed at the top of the steps."); advance(s); }
+function markDone(s, withTimer){
+  S.done[s.id]=now(); delete S.skipped[s.id]; delete S.later[s.id];
+  if(withTimer && s.timer){
+    const m=timerMin(s);
+    S.timers = S.timers.filter(t=>t.id!==s.id);
+    S.timers.push({id:s.id, label:s.timer.l, ends:now()+m*60000, dur:m*60000, fired:false});
+    toast(`${s.timer.l} timer started: ${fmtMin(m)}`);
+  }
+  save(); advance(s);
+}
+function advance(s){ const nx = ORDER[s.i+1]; if(nx) go(nx); else renderAll(); }
+function go(id){ if(!BY[id]) return; S.cur=id; save(true); renderAll(); showStepSlide(); }
+function setFinish(v){ const was=S.cur; S.finish=v; reindex(); syncFinSel(); save(); renderAll(); if(S.cur!==was) showStepSlide(); toast(v==="custom"?"Showing the cherry burst finish steps.":"Showing the your-own-finish steps."); }
+function syncFinSel(){ const el=$("finSel"); if(el) el.value = S.finish ? mode() : ""; }
+
+/* ---------------- header: progress + timers ---------------- */
+function renderProgress(){
+  const d = VIS.filter(s=>S.done[s.id]||S.skipped[s.id]).length;
+  $("barFill").style.width = (d/N*100)+"%";
+  $("progTxt").textContent = `${d} / ${N} steps`;
+}
+function renderTimers(){
+  const box=$("timers"); const list=S.timers.slice().sort((a,b)=>a.ends-b.ends);
+  box.innerHTML = list.map(t=>{
+    const left=t.ends-now(), s=BY[t.id]; const dn = left<=0;
+    return `<span class="tchip${dn?" doneT":""}"><button type="button" class="go" data-go="${t.id}">${esc(s?s.t.split(" ").slice(0,4).join(" "):t.id)}</button><b data-tchip="${t.id}">${dn?"ready":fmtDur(left)}</b><button type="button" class="x" data-x="${t.id}" aria-label="Dismiss timer">&times;</button></span>`;
+  }).join("");
+}
+$("timers").addEventListener("click", e=>{
+  const g=e.target.closest("[data-go]"); if(g){ go(g.dataset.go); return; }
+  const x=e.target.closest("[data-x]"); if(x){ S.timers=S.timers.filter(t=>t.id!==x.dataset.x); save(); renderAll(); }
+});
+let lastCuringSig="";
+function tick(){
+  let fired=false;
+  for(const t of S.timers){
+    const left=t.ends-now();
+    const el=document.querySelector(`[data-tchip="${t.id}"]`); if(el) el.textContent = left<=0?"ready":fmtDur(left);
+    const el2=document.querySelector(`[data-tleft="${t.id}"]`); if(el2) el2.textContent = fmtDur(left);
+    if(left<=0 && !t.fired){ t.fired=true; fired=true; chime(); toast(`${BY[t.id]?BY[t.id].t:"Timer"}: ${t.label.toLowerCase()} time is up`); }
+  }
+  const sig = S.timers.map(t=>t.id+(now()<t.ends?"1":"0")).join(",");
+  if(fired || sig!==lastCuringSig){ lastCuringSig=sig; if(fired) save(true); renderAll(true); }
+  const anyDone = S.timers.some(t=>t.fired);
+  document.title = (anyDone?"(ready) ":"") + "Cobol Build Companion";
+}
+let audioCtx=null;
+function unlockAudio(){ if(!audioCtx){ try{ audioCtx=new (window.AudioContext||window.webkitAudioContext)(); }catch(e){} } }
+function chime(){
+  if(!audioCtx) return;
+  try{ const t0=audioCtx.currentTime; [660,880,990].forEach((f,i)=>{ const o=audioCtx.createOscillator(), g=audioCtx.createGain(); o.frequency.value=f; o.type="sine"; g.gain.setValueAtTime(0,t0+i*.18); g.gain.linearRampToValueAtTime(.18,t0+i*.18+.02); g.gain.exponentialRampToValueAtTime(.001,t0+i*.18+.5); o.connect(g).connect(audioCtx.destination); o.start(t0+i*.18); o.stop(t0+i*.18+.55); }); }catch(e){}
+}
+
+function renderAll(fromTick){ renderProgress(); renderTimers(); renderRail(); renderDiag(); if(!fromTick || !document.activeElement || document.activeElement.id!=="note") renderCard(); }
+
+
+/* ---------------- layout diagrams ---------------- */
+const PLATE = "M0,48 L150,48 C200,48 215,5 265,5 L385,8 Q402,75 385,142 L265,145 C215,145 200,102 150,102 L0,102 Z";
+const SIDE = "M0,112 L400,112 L400,8 C352,8 322,46 262,52 L0,42 Z";
+function slits(w,h,step){ let o=""; let col=0; for(let x=step; x<w-4; x+=step, col++){ if(col%2===0){ o+=`<line class="dg-slit" x1="${x}" y1="0" x2="${x}" y2="${h/2-6}"/><line class="dg-slit" x1="${x}" y1="${h/2+6}" x2="${x}" y2="${h}"/>`; } else { o+=`<line class="dg-slit" x1="${x}" y1="10" x2="${x}" y2="${h-10}"/>`; } } return o; }
+const HATCH = `<defs><pattern id="dg-hatch" width="8" height="8" patternUnits="userSpaceOnUse" patternTransform="rotate(45)"><rect width="8" height="8" fill="var(--warn-soft)"/><line x1="0" y1="0" x2="0" y2="8" stroke="var(--warn)" stroke-width="2.2"/></pattern>
+<clipPath id="dg-clipP"><path d="${PLATE}"/></clipPath><clipPath id="dg-clipS"><path d="${SIDE}"/></clipPath><clipPath id="dg-clipT"><rect width="200" height="100"/></clipPath><clipPath id="dg-clipK"><rect width="220" height="110"/></clipPath><clipPath id="dg-clipB"><rect width="400" height="60"/></clipPath></defs>`;
+const LEGEND = (y)=>`<g transform="translate(30,${y})">
+  <rect width="32" height="18" rx="2" class="dg-tape"/><text class="dg-n" x="44" y="15">Tape off: stays bare wood for glue</text>
+  <rect x="400" width="32" height="18" rx="2" fill="var(--ply)" stroke="var(--accent)" stroke-opacity=".5" stroke-width="6"/><text class="dg-n" x="444" y="15">Edge zone: light touch, sand the face only</text>
+  <text class="dg-s" x="0" y="50">Not to scale. Match each part to its slide.</text>
+  <text class="dg-s" x="0" y="72">Sand in the direction of the grain lines on each face.</text></g>`;
+const DIAG_SVG = {
+A: `<svg viewBox="0 0 940 1160" role="img" aria-label="Layout of the session A panels and the two assemblies finished in place, show faces up">${HATCH}
+ <g transform="translate(30,36)"><text class="dg-t" x="0" y="0">Bottom</text><text class="dg-s" x="88" y="0">slide 10</text></g>
+ <g transform="translate(30,62)"><path class="dg-ply" d="${PLATE}"/><path class="dg-edge" d="${PLATE}" clip-path="url(#dg-clipP)"/>
+   <text class="dg-s" x="12" y="80">head</text><text class="dg-s" x="336" y="80">tail</text>
+   <text class="dg-n" x="0" y="178">Plain face up.</text><text class="dg-n" x="0" y="200">Head box (slide 15) hangs below; prop it level.</text></g>
+ <g transform="translate(500,36)"><text class="dg-t" x="0" y="0">Top plate</text><text class="dg-s" x="116" y="0">slide 33</text></g>
+ <g transform="translate(500,62)"><path class="dg-ply" d="${PLATE}"/><path class="dg-edge" d="${PLATE}" clip-path="url(#dg-clipP)"/>
+   <rect class="dg-tape" x="0" y="53" width="128" height="6"/><rect class="dg-tape" x="122" y="51" width="14" height="12"/>
+   <rect class="dg-tape" x="0" y="91" width="128" height="6"/><rect class="dg-tape" x="122" y="87" width="14" height="12"/>
+   <circle class="dg-hole" cx="272" cy="75" r="15"/><rect class="dg-hole" x="336" y="38" width="10" height="74" rx="4"/>
+   <rect class="dg-tape" x="321" y="70" width="10" height="10"/>
+   <rect class="dg-tape" x="351" y="56" width="10" height="11"/><rect class="dg-tape" x="351" y="83" width="10" height="11"/>
+   <rect class="dg-tape" x="294" y="14" width="18" height="9"/>
+   <rect class="dg-tape" x="364" y="24" width="16" height="9"/><rect class="dg-tape" x="364" y="117" width="16" height="9"/>
+   <rect class="dg-tape" x="374" y="69" width="11" height="12"/>
+   <text class="dg-s" x="300" y="-8" text-anchor="end">sound hole</text><text class="dg-s" x="312" y="-8">wheel slot</text>
+   <path class="dg-lead" d="M64,99 L64,160"/><text class="dg-w" x="0" y="178">Keybox: tape only the two contact lines</text>
+   <text class="dg-n" x="0" y="200">Small tape: mute, dog and drone bases,</text>
+   <text class="dg-n" x="0" y="222">tail clamp, bridge slots, tiny hole.</text></g>
+ <g transform="translate(30,318)"><text class="dg-t" x="0" y="0">Tail wall</text><text class="dg-s" x="106" y="0">slide 9</text></g>
+ <g transform="translate(30,346)"><rect class="dg-ply" x="30" y="-8" width="22" height="9"/><rect class="dg-ply" x="148" y="-8" width="22" height="9"/>
+   <rect class="dg-ply" width="200" height="100"/><rect class="dg-edge" width="200" height="100" clip-path="url(#dg-clipT)"/>
+   <circle class="dg-hole" cx="100" cy="46" r="17"/><path class="dg-lead" d="M118,46 L214,46" style="stroke:var(--muted)"/><text class="dg-s" x="220" y="51">crank shaft hole</text>
+   <text class="dg-n" x="0" y="128">Outer face up. Confirm it by</text><text class="dg-n" x="0" y="150">dry-fitting on the bottom (slide 20).</text></g>
+ <g transform="translate(500,318)"><text class="dg-t" x="0" y="0">Slotted bending panel</text><text class="dg-s" x="244" y="0">slide 28</text></g>
+ <g transform="translate(500,346)"><rect class="dg-ply" width="220" height="110"/><rect class="dg-edge" width="220" height="110" clip-path="url(#dg-clipK)"/>${slits(220,110,13)}
+   <text class="dg-n" x="236" y="22">Outer face up.</text><text class="dg-n" x="236" y="48">Wipe dye out of</text><text class="dg-n" x="236" y="70">the slits so it</text><text class="dg-n" x="236" y="92">doesn't pool.</text></g>
+ <g transform="translate(30,556)"><text class="dg-t" x="0" y="0">Keybox walls</text><text class="dg-s" x="146" y="0">in place, slide 12</text></g>
+ <g transform="translate(30,584)"><rect class="dg-ply" width="400" height="60"/><rect class="dg-edge" width="400" height="60" style="stroke-width:10" clip-path="url(#dg-clipB)"/>${Array.from({length:15},(_,i)=>`<rect class="dg-hole" x="${14+i*26}" y="10" width="11" height="17" rx="1"/>`).join("")}
+   <text class="dg-n" x="0" y="88">Dye the outer faces of the walls.</text>
+   <text class="dg-n" x="0" y="110">Key slots: one tape strip per wall, inside.</text>
+   <text class="dg-w" x="0" y="132">6 bolt holes: dots. Bottom: undyed, black later.</text></g>
+ <g transform="translate(30,760)"><text class="dg-t" x="0" y="0">Keybox lid</text><text class="dg-s" x="124" y="0">slide 11, laid flat</text></g>
+ <g transform="translate(30,788)"><path class="dg-ply" d="M0,0 L400,0 L400,12 L388,12 L388,30 L400,30 L400,42 L0,42 Z"/>
+   <rect x="168" y="13" width="64" height="16" rx="2" fill="none" stroke="var(--ply-edge)" stroke-width="1.5" stroke-dasharray="3 2"/><text class="dg-s" x="200" y="26" text-anchor="middle" style="font-size:11px">logo</text>
+   <text class="dg-n" x="0" y="68">Logo face up: dye it red now. It's the inside.</text>
+   <text class="dg-w" x="0" y="90">Plain top face and edges: bare, sprayed black later.</text></g>
+ <g transform="translate(500,556)"><text class="dg-t" x="0" y="0">Head box</text><text class="dg-s" x="104" y="0">in place, slide 17</text></g>
+ <g transform="translate(500,584)"><path class="dg-tape" d="M48,0 L224,0 L216,14 L42,14 Z"/><path class="dg-ply" d="M42,14 L216,14 L190,104 L0,104 Z"/>
+   <line class="dg-slit" x1="70" y1="40" x2="96" y2="30" style="stroke-width:4"/><line class="dg-slit" x1="66" y1="58" x2="92" y2="48" style="stroke-width:4"/><line class="dg-slit" x1="62" y1="76" x2="88" y2="66" style="stroke-width:4"/>
+   <path class="dg-lead" d="M224,6 L250,6"/><text class="dg-w" x="256" y="11">Tape the top</text><text class="dg-s" x="256" y="31">cover plate</text><text class="dg-s" x="256" y="49">glues here</text>
+   <text class="dg-n" x="0" y="132">Red on the outer sides and front now.</text>
+   <text class="dg-n" x="0" y="154">The mini burst fade comes in the spray phase.</text></g>
+ <g transform="translate(500,772)"><text class="dg-t" x="0" y="0">Top plate, tail end</text><text class="dg-s" x="210" y="0">close-up</text></g>
+ <defs><clipPath id="dg-clipI"><rect x="290" y="0" width="110" height="150"/></clipPath></defs>
+ <g transform="translate(600,800) scale(1.45) translate(-290,0)"><g clip-path="url(#dg-clipI)"><path class="dg-ply" d="${PLATE}"/><path class="dg-edge" d="${PLATE}" clip-path="url(#dg-clipP)"/>
+   <circle class="dg-hole" cx="272" cy="75" r="15"/><rect class="dg-hole" x="336" y="38" width="10" height="74" rx="4"/>
+   <rect class="dg-tape" x="321" y="70" width="10" height="10"/><rect class="dg-tape" x="351" y="56" width="10" height="11"/><rect class="dg-tape" x="351" y="83" width="10" height="11"/>
+   <rect class="dg-tape" x="294" y="14" width="18" height="9"/><rect class="dg-tape" x="364" y="24" width="16" height="9"/><rect class="dg-tape" x="364" y="117" width="16" height="9"/><rect class="dg-tape" x="374" y="69" width="11" height="12"/></g></g>
+ <g style="fill:none"><path class="dg-lead" d="M594,827 L605,827"/><path class="dg-lead" d="M594,909 L644,909"/>
+   <path class="dg-lead" d="M729,841 L764,841"/><path class="dg-lead" d="M705,888 L764,888"/><path class="dg-lead" d="M729,975 L764,975"/><path class="dg-lead" d="M740,909 L764,909"/><path class="dg-lead" d="M705,928 L764,928"/></g>
+ <text class="dg-s" x="588" y="832" text-anchor="end">mute</text><text class="dg-s" x="588" y="914" text-anchor="end">tiny hole</text>
+ <text class="dg-s" x="770" y="846">dog or drone base</text><text class="dg-s" x="770" y="893">bridge slot</text><text class="dg-s" x="770" y="914">tail clamp</text><text class="dg-s" x="770" y="933">bridge slot</text><text class="dg-s" x="770" y="980">dog or drone base</text>
+ <text class="dg-n" x="30" y="1036">Each slot gets its own small piece of tape. No strip under the bridge.</text>
+ ${LEGEND(1070)}</svg>`,
+B: `<svg viewBox="0 0 940 470" role="img" aria-label="Layout of the two side panels, outside faces up">${HATCH}
+ <g transform="translate(30,36)"><text class="dg-t" x="0" y="0">Side 1</text><text class="dg-s" x="80" y="0">slide 29</text></g>
+ <g transform="translate(30,62)"><path class="dg-ply" d="${SIDE}"/><path class="dg-edge" d="${SIDE}" clip-path="url(#dg-clipS)"/>
+   <text class="dg-s" x="12" y="98">head</text><text class="dg-s" x="342" y="98">tail</text>
+   <text class="dg-n" x="0" y="142">Outside face up.</text><text class="dg-n" x="0" y="164">Pencil "IN" and "L" on the inner face.</text></g>
+ <g transform="translate(500,36)"><text class="dg-t" x="0" y="0">Side 2 (mirror image)</text></g>
+ <g transform="translate(500,62)"><g transform="translate(400,0) scale(-1,1)"><path class="dg-ply" d="${SIDE}"/><path class="dg-edge" d="${SIDE}" clip-path="url(#dg-clipS)"/></g>
+   <text class="dg-s" x="12" y="98">tail</text><text class="dg-s" x="342" y="98">head</text>
+   <text class="dg-n" x="0" y="142">Outside face up.</text><text class="dg-n" x="0" y="164">Pencil "IN" and "R" on the inner face.</text></g>
+ <g transform="translate(30,276)"><text class="dg-n" x="0" y="0">The sides aren't rectangles. The bottom edge is straight, the head end</text>
+   <text class="dg-n" x="0" y="24">is the lowest, and the tail end is the tallest. Check the shape against</text>
+   <text class="dg-n" x="0" y="48">the diagram on slide 29 before marking.</text></g>
+ ${LEGEND(366)}</svg>`
+};
+const DIAG_FOR = {fa1:"A",fa2:"A",fa5:"A",fa5m:"A",fa6:"A",fb:"B"};
+const DIAG_TITLE = {A:["Session A layout","The bottom with the head box on it, three flat panels and the keybox lid, plus the keybox walls. Faces to dye are up."],B:["Session B panel layout","The two sides, laid out outside face up."]};
+function renderDiag(){
+  const el=$("diag"), k=DIAG_FOR[S.cur];
+  el.hidden = !k || (typeof viewPage!=="undefined" && viewPage!==null);
+  if(!k){ el.dataset.k=""; return; }
+  if(el.dataset.k===k) return;
+  el.dataset.k=k;
+  el.innerHTML = `<div class="dcard"><h4>${DIAG_TITLE[k][0]}</h4><p class="cap">${DIAG_TITLE[k][1]}</p><div class="dwrap">${DIAG_SVG[k]}</div></div>`;
+}
+/* ---------------- manual viewer ---------------- */
+let pdf=null, viewPage=null, renderTask=null, zoomScale=1;
+const IDB_NAME="cobol-companion", IDB_STORE="manual";
+function idb(){ return new Promise((res,rej)=>{ const r=indexedDB.open(IDB_NAME,1); r.onupgradeneeded=()=>r.result.createObjectStore(IDB_STORE); r.onsuccess=()=>res(r.result); r.onerror=()=>rej(r.error); }); }
+async function idbGet(){ try{ const db=await idb(); return await new Promise((res)=>{ const q=db.transaction(IDB_STORE).objectStore(IDB_STORE).get("pdf"); q.onsuccess=()=>res(q.result||null); q.onerror=()=>res(null); }); }catch(e){ return null; } }
+async function idbPut(buf){ try{ const db=await idb(); await new Promise((res)=>{ const tx=db.transaction(IDB_STORE,"readwrite"); tx.objectStore(IDB_STORE).put(buf,"pdf"); tx.oncomplete=res; tx.onerror=res; }); }catch(e){} }
+
+function stepSlide(){ const s=BY[S.cur]; return s.slide || s.ref || null; }
+function renderStage(){
+  renderDiag();
+  const stage=$("stage"), s=BY[S.cur];
+  $("vBack").hidden = !(viewPage && viewPage!==stepSlide());
+  if(!pdf){
+    $("vTitle").textContent = s.slide ? `Manual slide ${s.slide}` : "Manual";
+    stage.innerHTML = `<div class="drop" id="drop"><h4>Load your copy of the manual</h4><p>The slides show here next to each step. Download the v2.0.0 PDF from Nerdy Gurdy, then drop it on this box or choose it. It stays in this browser, so you only do this once per device.</p><code>${esc(MANUAL_URL)}</code><div style="display:flex;gap:8px;flex-wrap:wrap"><a class="btn" href="${MANUAL_URL}" target="_blank" rel="noopener">Open the PDF on nerdygurdy.nl</a><button type="button" class="btn pri" id="pick">Choose the PDF</button></div></div>`;
+    $("pick").onclick=()=>$("fileIn").click();
+    wireDrop($("drop"));
+    return;
+  }
+  const page = viewPage || stepSlide();
+  if(!page){
+    $("vTitle").textContent = "No manual slide for this step";
+    stage.innerHTML = `<div class="noslide"><h4>Added step</h4><p>This step is part of your burst finish plan and has no slide in the manual. Use the arrows to browse the manual if you need it.</p><div class="burst" aria-hidden="true"></div></div>`;
+    return;
+  }
+  const isRef = !s.slide && page===s.ref && !viewPage;
+  $("vTitle").textContent = `Manual slide ${page} of ${pdf.numPages}` + (isRef?" \u00B7 reference":"");
+  if(!stage.querySelector("#cv")){
+    stage.innerHTML = `<div class="canvaswrap" id="cw" title="Click to zoom"><canvas id="cv"></canvas></div><div class="peeknote" id="peek"></div>`;
+    $("cw").onclick=openZoom;
+  }
+  $("peek").textContent = viewPage && viewPage!==stepSlide() ? "Browsing the manual. Your step hasn't changed." : (isRef?"Reference slide for this added step.":"");
+  drawPage(page, $("cv"), $("cw").clientWidth);
+}
+async function drawPage(n, canvas, cssW, scaleMult){
+  if(!pdf || !canvas) return;
+  try{
+    const page = await pdf.getPage(n);
+    const base = page.getViewport({scale:1});
+    const dpr = Math.min(window.devicePixelRatio||1, 2.5);
+    const scale = (cssW/base.width) * (scaleMult||1);
+    const vp = page.getViewport({scale: scale*dpr});
+    if(canvas===$("cv") && renderTask){ try{ renderTask.cancel(); }catch(e){} }
+    canvas.width = Math.floor(vp.width); canvas.height = Math.floor(vp.height);
+    if(scaleMult){ canvas.style.width = Math.floor(vp.width/dpr)+"px"; canvas.style.height = Math.floor(vp.height/dpr)+"px"; }
+    const task = page.render({canvasContext: canvas.getContext("2d"), viewport: vp});
+    if(canvas===$("cv")) renderTask = task;
+    await task.promise;
+  }catch(e){ if(e && e.name==="RenderingCancelledException") return; }
+}
+function showSlide(n, peek){
+  if(!pdf){ renderStage(); return; }
+  n = Math.max(1, Math.min(pdf.numPages, n));
+  viewPage = (n===stepSlide()) ? null : n;
+  renderStage();
+  $("viewer").scrollTop = 0;
+}
+function showStepSlide(){ viewPage=null; renderStage(); }
+$("vPrev").onclick=()=>{ const p=viewPage||stepSlide()||9; showSlide(p-1,true); };
+$("vNext").onclick=()=>{ const p=viewPage||stepSlide()||8; showSlide(p+1,true); };
+$("vBack").onclick=showStepSlide;
+$("vZoom").onclick=()=>openZoom();
+let roT=null;
+new ResizeObserver(()=>{ clearTimeout(roT); roT=setTimeout(()=>{ if(pdf && $("cv")) drawPage(viewPage||stepSlide(), $("cv"), $("cw").clientWidth); },120); }).observe($("viewer"));
+
+function openZoom(){
+  const p = viewPage||stepSlide(); if(!pdf || !p) return;
+  zoomScale = 1; $("zoom").hidden=false; drawZoom(); $("zClose").focus();
+}
+function drawZoom(){ const p = viewPage||stepSlide(); const w = $("zScroll").clientWidth - 8; drawPage(p, $("zCanvas"), w, zoomScale); }
+$("zClose").onclick=()=>{ $("zoom").hidden=true; };
+$("zIn").onclick=()=>{ zoomScale=Math.min(3,zoomScale*1.35); drawZoom(); };
+$("zOut").onclick=()=>{ zoomScale=Math.max(.6,zoomScale/1.35); drawZoom(); };
+(function dragPan(){ const sc=$("zScroll"); let d=null; sc.addEventListener("pointerdown",e=>{ d={x:e.clientX,y:e.clientY,l:sc.scrollLeft,t:sc.scrollTop}; sc.setPointerCapture(e.pointerId); sc.style.cursor="grabbing"; }); sc.addEventListener("pointermove",e=>{ if(!d) return; sc.scrollLeft=d.l-(e.clientX-d.x); sc.scrollTop=d.t-(e.clientY-d.y); }); const up=()=>{ d=null; sc.style.cursor=""; }; sc.addEventListener("pointerup",up); sc.addEventListener("pointercancel",up); })();
+
+function wireDrop(el){
+  ["dragenter","dragover"].forEach(ev=>el.addEventListener(ev,e=>{ e.preventDefault(); el.classList.add("over"); }));
+  ["dragleave","drop"].forEach(ev=>el.addEventListener(ev,e=>{ e.preventDefault(); el.classList.remove("over"); }));
+  el.addEventListener("drop", e=>{ const f=e.dataTransfer && e.dataTransfer.files[0]; if(f) loadFile(f); });
+}
+$("btnLoad").onclick=()=>$("fileIn").click();
+$("fileIn").addEventListener("change", e=>{ const f=e.target.files[0]; if(f) loadFile(f); e.target.value=""; });
+async function loadFile(f){
+  if(!/pdf$/i.test(f.type) && !/\.pdf$/i.test(f.name)){ toast("That file isn't a PDF. Choose the Cobol manual PDF."); return; }
+  const buf = await f.arrayBuffer();
+  const ok = await openPdf(buf.slice(0));
+  if(ok){ idbPut(buf); }
+}
+async function openPdf(buf){
+  if(!window.pdfjsLib){ toast("The PDF viewer couldn't load. Check your connection and reload."); return false; }
+  try{
+    pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js";
+    pdf = await pdfjsLib.getDocument({data:new Uint8Array(buf), isEvalSupported:false}).promise;
+    $("btnLoad").textContent = "Replace manual";
+    if(pdf.numPages!==86) toast(`This PDF has ${pdf.numPages} slides. The steps follow v2.0.0 (86 slides), so slide numbers may not match.`);
+    viewPage=null; renderStage(); return true;
+  }catch(e){ pdf=null; toast("That PDF couldn't be opened. Try downloading the manual again."); renderStage(); return false; }
+}
+
+/* ---------------- corrections drawer ---------------- */
+$("finSel").addEventListener("change", e=>setFinish(e.target.value));
+syncFinSel();
+$("btnNotes").onclick=()=>{
+  const d=$("drawer");
+  if(!d.hidden){ d.hidden=true; return; }
+  d.innerHTML = `<div style="display:flex;justify-content:space-between;gap:10px;align-items:start"><h3>Manual corrections</h3><button type="button" class="btn" id="dClose">Close</button></div><p class="sub">Small issues found in the v2.0.0 manual, and the one place this guide deliberately departs from it.</p><ol>${ERRATA.map(([w,t])=>`<li><div class="mono">${esc(w)}</div>${esc(t)}</li>`).join("")}</ol>`;
+  d.hidden=false; $("dClose").onclick=()=>{ d.hidden=true; }; $("dClose").focus();
+};
+
+/* ---------------- wake lock ---------------- */
+let wake=null, wantWake=false;
+async function getWake(){ try{ wake = await navigator.wakeLock.request("screen"); wake.addEventListener("release",()=>{ wake=null; }); return true; }catch(e){ return false; } }
+$("btnWake").onclick=async()=>{
+  unlockAudio();
+  if(wantWake){ wantWake=false; try{ wake && await wake.release(); }catch(e){} $("btnWake").classList.remove("on"); $("btnWake").textContent="Keep screen on"; return; }
+  if(!("wakeLock" in navigator)){ toast("This browser can't keep the screen awake. Change your laptop's sleep setting instead."); return; }
+  const ok = await getWake();
+  if(ok){ wantWake=true; $("btnWake").classList.add("on"); $("btnWake").textContent="Screen stays on"; }
+  else toast("The screen-awake request was refused here. Change your laptop's sleep setting instead.");
+};
+document.addEventListener("visibilitychange",()=>{ if(wantWake && !wake && document.visibilityState==="visible") getWake(); });
+
+/* ---------------- keyboard ---------------- */
+document.addEventListener("keydown", e=>{
+  if(e.target.closest && e.target.closest("textarea,input")) return;
+  if(e.metaKey||e.ctrlKey||e.altKey) return;
+  if(e.key==="Escape"){ if(!$("zoom").hidden){ $("zoom").hidden=true; } else if(!$("drawer").hidden){ $("drawer").hidden=true; } return; }
+  if(!$("zoom").hidden) return;
+  const s=BY[S.cur];
+  if(e.key==="ArrowRight" && s.i<N-1){ e.preventDefault(); go(ORDER[s.i+1]); }
+  else if(e.key==="ArrowLeft" && s.i>0){ e.preventDefault(); go(ORDER[s.i-1]); }
+  else if(e.key==="d"||e.key==="D"){ unlockAudio(); if(!isDone(s.id)) markDone(s, !!s.timer); }
+  else if(e.key==="s"||e.key==="S"){ if(!isDone(s.id) && !isLater(s.id)) skipLater(s); }
+  else if(e.key==="z"||e.key==="Z"){ openZoom(); }
+});
+document.addEventListener("pointerdown", unlockAudio, {once:true});
+
+/* ---------------- boot ---------------- */
+setSync("local");
+renderAll(); renderStage();
+setInterval(tick, 1000);
+(async()=>{ const buf = await idbGet(); if(buf) openPdf(buf.slice ? buf.slice(0) : buf); })();
+initRemote();
+</script>
+
+</body></html>
